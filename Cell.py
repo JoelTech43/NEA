@@ -7,6 +7,7 @@ class Cell:
         self.parent = parent #setting attributes of object to the parameters passed in.
         self.walls = walls
         self.maze_pos = maze_pos
+        self.border_width = 1 #border thickness in pixels.
         self.start_dist = float("inf") #setting attributes for pathfinding algorithms, default is float("inf") so that the 1st calculated distance will be less than it.
         self.heuristic_estimate = float("inf")
         self.overall_dist_estimate = float("inf")
