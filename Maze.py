@@ -21,9 +21,9 @@ class Maze:
             self.cells.append(new_row) #appending the row to the full list of cells.
     
     def draw_maze(self, canvas):
-        for row in self.cells:
-            for cell in row:
-                cell.draw_cell(canvas)
+        for row in self.cells: #go through each row.
+            for cell in row: #then each cell in the row.
+                cell.draw_cell(canvas) #and call the cell's draw_cell method, to draw it on the canvas.
     
     def get_screen_pos(self) -> tuple: #returns the top left screen coordinate of the maze
         return self.screen_pos
@@ -36,3 +36,6 @@ class Maze:
     
     def get_cell_height(self) -> int: #returns the height/width of each cell in pixels.
         return self.cell_height
+    
+    def get_maze_height(self) -> int:
+        return self.maze_height
