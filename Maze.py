@@ -2,24 +2,32 @@ from Cell import Cell
 
 class Maze:
     #__init__ method:
-    #parent is object that instantiated this object, cells is a list of Cell objects,
-    #maze_dimensions is a tuple of (width, height) where width and height are integers,
+    #parent is object that instantiated this object, cell_array is a 2D array of lists representing each cell (3D array),
+    #maze_height is a integer representing how many rows/cols the maze has,
     #cell_height is the height of each cell in pixels.
-    def __init__(self, parent, cell_array: list, maze_dimensions: tuple, cell_height: int) -> None:
+    #screen_pos is a tuple (x, y) where x and y are integers. Represents coord in screen of top left of maze.
+    def __init__(self, parent, cell_array: list, maze_height: int, cell_height: int, screen_pos: tuple) -> None:
         self.parent = parent
-        self.maze_dimensions = maze_dimensions
+        self.maze_height = maze_height
+        self.screen_pos = screen_pos
         self.cell_height = cell_height
         self.cells = [] #will be a 2D list of Cell objects, each inner list is a row in the maze.
 
-        for row in range(self.maze_dimensions[1]):
+        for row in range(self.maze_height):
             new_row = [] #new list for each row
-            for col in range(self.maze_dimensions[0]):
-                new_row.append(Cell(self, cell_array[row][col], (col, row))) #instantiating a Cell object for each cell in the cell_array, and storing it in the list for that row.
+            for col in range(self.maze_height):
+                cell_screen_pos = (self.screen_pos[0]+col*self.cell_height, self.screen_pos[1]+row*self.cell_height) #calculate position of cell on screen.
+                new_row.append(Cell(self, cell_array[row][col], (col, row), cell_screen_pos, self.cell_height)) #instantiating a Cell object for each cell in the cell_array and storing it in a list for each row.
             self.cells.append(new_row) #appending the row to the full list of cells.
     
     def draw_maze(self, canvas):
-        ...
+        for row in self.cells:
+            for cell in row:
+                cell.draw_cell(canvas)
     
+    def get_screen_pos(self) -> tuple: #returns the top left screen coordinate of the maze
+        return self.screen_pos
+
     def get_cell(self, maze_pos: tuple) -> Cell: #returns the Cell object for the given position.
         return self.cells[maze_pos[1]][maze_pos[0]]
     
