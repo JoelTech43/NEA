@@ -24,13 +24,13 @@ class GameHandler:
 
     def play_level(self, level_id: int):
         level_handler = LevelHandler(self, self.__canvas, level_id)
-        level_handler.level_loop()
+        replay = level_handler.level_loop()
 
     def process_inputs(self):
         pass
 
     def save_and_quit(self):
-        pass
+        self.__running = False
 
     def get_maze_screen_pos(self) -> tuple:
         return self.__MAZE_SCREEN_POS

@@ -19,11 +19,20 @@ class Cell:
         self.__overall_dist_estimate = float("inf")
         self.__prev_cell = None #another attribute for pathfinding - prev_cell will be set in algorithm.
     
-    def update_estimate(self, start_dist: int, heuristic_estimate: int) -> bool: #to be written later.
-        pass
+    def update_estimate(self, start_dist: int, heuristic_estimate: int) -> bool:
+        new_total = start_dist+heuristic_estimate #calculates total estimate of route distance
+        if new_total < self.__overall_dist_estimate: #if lower than previous estimates, we have found new shortest route to this cell. Update all vars.
+            self.__start_dist = start_dist
+            self.__heuristic_estimate = heuristic_estimate
+            self.__overall_dist_estimate = new_total
+            return True #returns boolean showing whether cell was updated or not.
+        return False
     
     def set_prev_cell(self, prev_cell) -> None: #to be written later.
-        pass
+        self.__prev_cell = prev_cell
+    
+    def get_prev_cell(self):
+        return self.__prev_cell
 
     def get_walls(self) -> tuple: #returns this cell's walls tuple
         return self.__walls
@@ -39,6 +48,12 @@ class Cell:
 
     def get_maze_pos(self) -> tuple: #returns the tuple of this cell's position in the maze, in the form (x, y) where top left is (0, 0).
         return self.__maze_pos
+    
+    def reset_estimates(self):
+        self.__prev_cell = None
+        self.__start_dist = float("inf")
+        self.__heuristic_estimate = float("inf")
+        self.__overall_dist_estimate = float("inf")
     
     def draw_cell(self, canvas):
         if self.__walls[0] == True: #draw left wall

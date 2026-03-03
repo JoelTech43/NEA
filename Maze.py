@@ -39,3 +39,8 @@ class Maze:
     
     def get_maze_height(self) -> int:
         return self.__maze_height
+
+    def reset_cell_estimates(self):
+        for row in self.__cells:
+            for cell in row:
+                cell.reset_estimates()

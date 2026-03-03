@@ -1,4 +1,6 @@
 import pygame #pygame used to draw the entity. Initialised in main.py but must be imported here to use the functions in this file.
+from random import choice
+from math import sqrt
 
 class Entity:
     #__init__ method:
@@ -74,14 +76,96 @@ class Enemy(Entity):
         super().__init__(parent, move_distance, maze_pos, cell_height)
         self._col = (255,0,0)
 
-    def determine_target_cell(self) -> tuple:
-        pass
+    # def __determine_target_cell(self) -> tuple:
+    #     player_maze_pos, _ = self._parent.get_entity_positions()
+    #     distance = sqrt((player_maze_pos[0]-self._maze_pos[0])**2 + (player_maze_pos[1]-self._maze_pos[1])**2) #Pythagorean distance between enemy and player.
+    #     maze_height = self._parent.get_maze_height()
 
-    def find_shortest_route(self, target_cell: tuple) -> list:
-        pass
+    #     if distance < 5:
+    #         target_cell = player_maze_pos
+    #     else:
 
-    def move_enemy(self, dest: tuple) -> None:
-        pass
+
+    def __find_shortest_route(self, target_cell: tuple) -> list:
+        cells = self._parent.get_maze().get_cells()
+        visited = []
+        potential = []
+
+        visiting_cell_coord = self._maze_pos
+        
+        visiting_cell = cells[visiting_cell_coord[1]][visiting_cell_coord[0]]
+
+        visiting_cell.update_estimate(0, 10000)
+
+        while visiting_cell_coord != target_cell:
+            print(visiting_cell_coord)
+            visited.append(visiting_cell_coord)
+            
+            walls = visiting_cell.get_walls()
+
+            considering_cell_coords = []
+
+            if walls[0] is False:
+                considering_coord = (visiting_cell_coord[0]-1, visiting_cell_coord[1])
+                considering_cell_coords.append(considering_coord)
+            
+            if walls[1] is False:
+                considering_coord = (visiting_cell_coord[0], visiting_cell_coord[1]-1)
+                considering_cell_coords.append(considering_coord)
+            
+            if walls[2] is False:
+                considering_coord = (visiting_cell_coord[0]+1, visiting_cell_coord[1])
+                considering_cell_coords.append(considering_coord)
+            
+            if walls[3] is False:
+                considering_coord = (visiting_cell_coord[0], visiting_cell_coord[1]+1)
+                considering_cell_coords.append(considering_coord)
+            
+            for considering_coord in considering_cell_coords:
+                if considering_coord not in visited: #don't attempt to update visited cells as they already have shortest route
+                    potential.append(considering_coord)
+                    considering_cell = cells[considering_coord[1]][considering_coord[0]]
+
+                    start_dist = visiting_cell.get_start_dist() + 1
+                    heuristic_estimate = abs(target_cell[0]-considering_coord[0])+abs(target_cell[1]-considering_coord[1])
+
+                    updated = considering_cell.update_estimate(start_dist, heuristic_estimate)
+
+                    if updated:
+                        considering_cell.set_prev_cell(visiting_cell)
+
+            potential = list(set(potential))
+
+            potential.sort(key=lambda coord: (cells[coord[1]][coord[0]].get_overall_estimate(), cells[coord[1]][coord[0]].get_heuristic_estimate())) #sort primarily by total estimate, then by heuristic estimate.
+
+            visiting_cell_coord = potential[0]
+            del potential[0]
+
+            visiting_cell = cells[visiting_cell_coord[1]][visiting_cell_coord[0]]
+        
+        #out of loop so visiting_cell is destination
+        route = [] #list to hold all coords along shortest route
+
+        while visiting_cell.get_prev_cell() != None: #while haven't got back to start
+            route.append(visiting_cell.get_maze_pos()) #add current cell to route
+            visiting_cell = visiting_cell.get_prev_cell() #move to previous cell
+        
+        #route list now starts with destination and ends with start
+        route.reverse() #now starts at start and ends at end. DOESN'T INCLUDE START CELL.
+        return route
+
+    def __move_enemy(self, dest: tuple) -> None:
+        _, enemy_poses = self._parent.get_entity_positions()
+        if dest in enemy_poses:
+            options = [(self._maze_pos[0]-1,self._maze_pos[1]),(self._maze_pos[0]+1,self._maze_pos[1]),(self._maze_pos[0],self._maze_pos[1]-1),(self._maze_pos[0]-1,self._maze_pos[1]+1)]
+            options.remove(dest)
+            dest = choice(options)
+        
+        self._maze_pos = dest
 
     def make_calculated_move(self) -> None:
-        pass
+        player_maze_pos, _ = self._parent.get_entity_positions()
+        shortest_route = self.__find_shortest_route(player_maze_pos)
+
+        self.__move_enemy(shortest_route[0])
+        self._parent.get_maze().reset_cell_estimates()
