@@ -86,73 +86,88 @@ class Enemy(Entity):
     #     else:
 
 
-    def __find_shortest_route(self, target_cell: tuple) -> list:
-        cells = self._parent.get_maze().get_cells()
-        visited = []
-        potential = []
-
-        visiting_cell_coord = self._maze_pos
+    def __find_shortest_route(self, target_cell: tuple) -> tuple:
+        adj_mat_route = self._parent.get_route_between_cells(self._maze_pos, target_cell)
         
-        visiting_cell = cells[visiting_cell_coord[1]][visiting_cell_coord[0]]
-
-        visiting_cell.update_estimate(0, 10000)
-
-        while visiting_cell_coord != target_cell:
-            print(visiting_cell_coord)
-            visited.append(visiting_cell_coord)
-            
-            walls = visiting_cell.get_walls()
-
-            considering_cell_coords = []
-
-            if walls[0] is False:
-                considering_coord = (visiting_cell_coord[0]-1, visiting_cell_coord[1])
-                considering_cell_coords.append(considering_coord)
-            
-            if walls[1] is False:
-                considering_coord = (visiting_cell_coord[0], visiting_cell_coord[1]-1)
-                considering_cell_coords.append(considering_coord)
-            
-            if walls[2] is False:
-                considering_coord = (visiting_cell_coord[0]+1, visiting_cell_coord[1])
-                considering_cell_coords.append(considering_coord)
-            
-            if walls[3] is False:
-                considering_coord = (visiting_cell_coord[0], visiting_cell_coord[1]+1)
-                considering_cell_coords.append(considering_coord)
-            
-            for considering_coord in considering_cell_coords:
-                if considering_coord not in visited: #don't attempt to update visited cells as they already have shortest route
-                    potential.append(considering_coord)
-                    considering_cell = cells[considering_coord[1]][considering_coord[0]]
-
-                    start_dist = visiting_cell.get_start_dist() + 1
-                    heuristic_estimate = abs(target_cell[0]-considering_coord[0])+abs(target_cell[1]-considering_coord[1])
-
-                    updated = considering_cell.update_estimate(start_dist, heuristic_estimate)
-
-                    if updated:
-                        considering_cell.set_prev_cell(visiting_cell)
-
-            potential = list(set(potential))
-
-            potential.sort(key=lambda coord: (cells[coord[1]][coord[0]].get_overall_estimate(), cells[coord[1]][coord[0]].get_heuristic_estimate())) #sort primarily by total estimate, then by heuristic estimate.
-
-            visiting_cell_coord = potential[0]
-            del potential[0]
-
-            visiting_cell = cells[visiting_cell_coord[1]][visiting_cell_coord[0]]
-        
-        #out of loop so visiting_cell is destination
         route = [] #list to hold all coords along shortest route
 
-        while visiting_cell.get_prev_cell() != None: #while haven't got back to start
-            route.append(visiting_cell.get_maze_pos()) #add current cell to route
-            visiting_cell = visiting_cell.get_prev_cell() #move to previous cell
+        if adj_mat_route == None:
+            cells = self._parent.get_maze().get_cells()
+            visited = []
+            potential = []
+
+            visiting_cell_coord = self._maze_pos
+            
+            visiting_cell = cells[visiting_cell_coord[1]][visiting_cell_coord[0]]
+
+            visiting_cell.update_estimate(0, 10000) #10000 as lower than infinity (so updates cell distance values) but large enough to never be smaller than an actual calculated value.
+
+            while visiting_cell_coord != target_cell:
+                visited.append(visiting_cell_coord)
+                
+                walls = visiting_cell.get_walls()
+
+                considering_cell_coords = []
+
+                if walls[0] is False:
+                    considering_coord = (visiting_cell_coord[0]-1, visiting_cell_coord[1])
+                    considering_cell_coords.append(considering_coord)
+                
+                if walls[1] is False:
+                    considering_coord = (visiting_cell_coord[0], visiting_cell_coord[1]-1)
+                    considering_cell_coords.append(considering_coord)
+                
+                if walls[2] is False:
+                    considering_coord = (visiting_cell_coord[0]+1, visiting_cell_coord[1])
+                    considering_cell_coords.append(considering_coord)
+                
+                if walls[3] is False:
+                    considering_coord = (visiting_cell_coord[0], visiting_cell_coord[1]+1)
+                    considering_cell_coords.append(considering_coord)
+                
+                for considering_coord in considering_cell_coords:
+                    if considering_coord not in visited: #don't attempt to update visited cells as they already have shortest route
+                        potential.append(considering_coord)
+                        considering_cell = cells[considering_coord[1]][considering_coord[0]]
+
+                        start_dist = visiting_cell.get_start_dist() + 1
+                        heuristic_estimate = abs(target_cell[0]-considering_coord[0])+abs(target_cell[1]-considering_coord[1])
+
+                        updated = considering_cell.update_estimate(start_dist, heuristic_estimate)
+
+                        if updated:
+                            considering_cell.set_prev_cell(visiting_cell)
+
+                potential = list(set(potential))
+
+                potential.sort(key=lambda coord: (cells[coord[1]][coord[0]].get_overall_estimate(), cells[coord[1]][coord[0]].get_heuristic_estimate())) #sort primarily by total estimate, then by heuristic estimate.
+
+                visiting_cell_coord = potential[0]
+                del potential[0]
+
+                visiting_cell = cells[visiting_cell_coord[1]][visiting_cell_coord[0]]
+
+                adj_mat_route = self._parent.get_route_between_cells(visiting_cell_coord, target_cell)
+                if adj_mat_route != None:
+                    #then adj_mat_route stores route from visiting_cell to target_cell, not including either. At end of this, route needs to store target_cell through to cell after visiting_cell
+                    route.append(target_cell) #starts route with target coord
+                    for coord in adj_mat_route[::-1]: #adds other route coords in reverse.
+                        route.append(coord)
+                    visiting_cell_coord = target_cell #sets visiting cell coord to target coord to end while loop. Visiting cell is still the cell before adj_mat_route.
+
+            #out of loop so visiting_cell is destination
+
+            while visiting_cell.get_prev_cell() != None: #while haven't got back to start
+                route.append(visiting_cell.get_maze_pos()) #add current cell to route
+                visiting_cell = visiting_cell.get_prev_cell() #move to previous cell
+            
+            #route list now starts with destination and ends with start. DOESN'T INCLUDE START CELL, INCLUDES END CELL
+            route[:-1][::-1] #now starts at start and ends at end. DOESN'T INCLUDE START OR END CELL.
         
-        #route list now starts with destination and ends with start
-        route.reverse() #now starts at start and ends at end. DOESN'T INCLUDE START CELL.
-        return route
+        else:
+            route = adj_mat_route
+
+        return tuple(route)
 
     def __move_enemy(self, dest: tuple) -> None:
         _, enemy_poses = self._parent.get_entity_positions()

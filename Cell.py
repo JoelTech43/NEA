@@ -19,7 +19,7 @@ class Cell:
         self.__overall_dist_estimate = float("inf")
         self.__prev_cell = None #another attribute for pathfinding - prev_cell will be set in algorithm.
     
-    def update_estimate(self, start_dist: int, heuristic_estimate: int) -> bool:
+    def update_estimate(self, start_dist: int, heuristic_estimate: int|float) -> bool:
         new_total = start_dist+heuristic_estimate #calculates total estimate of route distance
         if new_total < self.__overall_dist_estimate: #if lower than previous estimates, we have found new shortest route to this cell. Update all vars.
             self.__start_dist = start_dist

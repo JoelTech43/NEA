@@ -38,6 +38,10 @@ class LevelHandler:
 
         self.__exit_level = False #level_loop runs until this is True
 
+        #Adjacency matrix functionality
+        self.__route_adj_mat = [[None for cell in range(self.get_maze_height())] for row in range(self.get_maze_height())]
+        
+
     def level_loop(self) -> bool:
         while self.__exit_level == False:
             self.__user_move()
@@ -88,7 +92,7 @@ class LevelHandler:
     def __check_game_loss(self) -> bool:
         pass
 
-    def __checK_game_win(self) -> bool:
+    def __check_game_win(self) -> bool:
         pass
 
     def game_over(self) -> bool:
@@ -96,6 +100,26 @@ class LevelHandler:
 
     def game_win(self) -> bool:
         pass
+
+    def find_cell_adj_mat_index(self, maze_pos):
+        maze_height = self.get_maze_height()
+        ind = maze_pos[1]*maze_height + maze_pos[0]
+        return ind
+
+    def get_route_between_cells(self, start: tuple, dest: tuple) -> None|tuple:
+        start_ind = self.find_cell_adj_mat_index(start)
+        dest_ind = self.find_cell_adj_mat_index(dest)
+        route = self.__route_adj_mat[start_ind][dest_ind]
+        return route
+
+    def set_route_between_cells(self, start: tuple, dest: tuple, route: tuple):
+        current_route = self.get_route_between_cells(start, dest)
+        current_route_length = float("inf") if current_route == None else len(current_route)
+        start_ind = self.find_cell_adj_mat_index(start)
+        dest_ind = self.find_cell_adj_mat_index(dest)
+        if len(route) < current_route_length:
+            self.__route_adj_mat[start_ind][dest_ind] = route
+            self.__route_adj_mat[dest_ind][start_ind] = route[::-1]
 
     def get_player(self) -> Player:
         return self.__player
