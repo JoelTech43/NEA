@@ -1,5 +1,5 @@
-from GameHandler import GameHandler #importing my Maze class to create the maze object. Cell is imported in Maze.py so I don't need to import it here.
+from GameHandler import GameHandler #importing my GameHandler class
 
-game_handler = GameHandler() 
+game_handler = GameHandler() #instantiating my GameHandler class
 
-game_handler.main_game_loop()
+game_handler.main_game_loop() #running the main game loop handled by the GameHandler class.
