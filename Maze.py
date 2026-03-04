@@ -1,4 +1,5 @@
 from Cell import Cell
+import pygame
 
 class Maze:
     #__init__ method:
@@ -6,11 +7,12 @@ class Maze:
     #maze_height is a integer representing how many rows/cols the maze has,
     #cell_height is the height of each cell in pixels.
     #screen_pos is a tuple (x, y) where x and y are integers. Represents coord in screen of top left of maze.
-    def __init__(self, parent, cell_array: list, maze_height: int, cell_height: int, screen_pos: tuple) -> None:
+    def __init__(self, parent, cell_array: list, maze_height: int, cell_height: int, screen_pos: tuple, finish_coord: tuple) -> None:
         self.__parent = parent
         self.__maze_height = maze_height
         self.__screen_pos = screen_pos
         self.__cell_height = cell_height
+        self.__finish_coord = finish_coord
         self.__cells = [] #will be a 2D list of Cell objects, each inner list is a row in the maze.
 
         for row in range(self.__maze_height):
@@ -24,6 +26,11 @@ class Maze:
         for row in self.__cells: #go through each row.
             for cell in row: #then each cell in the row.
                 cell.draw_cell(canvas) #and call the cell's draw_cell method, to draw it on the canvas.
+        
+        #draw finish square
+        finish_cell_screen_x = self.__screen_pos[0]+(self.__cell_height*self.__finish_coord[0])+1
+        finish_cell_screen_y = self.__screen_pos[1]+(self.__cell_height*self.__finish_coord[1])+1
+        pygame.draw.rect(canvas, (0,0,255), (finish_cell_screen_x, finish_cell_screen_y, self.__cell_height-2, self.__cell_height-2))
     
     def get_screen_pos(self) -> tuple: #returns the top left screen coordinate of the maze
         return self.__screen_pos
@@ -39,6 +46,9 @@ class Maze:
     
     def get_maze_height(self) -> int:
         return self.__maze_height
+
+    def get_finish_coord(self) -> tuple:
+        return self.__finish_coord
 
     def reset_cell_estimates(self):
         for row in self.__cells:

@@ -32,7 +32,7 @@ class LevelHandler:
 
 
         self.__CELL_HEIGHT = self.__parent.get_maze_screen_height()//maze_info["height"] #calculates cell height based on maze height.
-        self.__maze = Maze(self, maze_info["maze"], maze_info["height"], self.__CELL_HEIGHT, self.__parent.get_maze_screen_pos())
+        self.__maze = Maze(self, maze_info["maze"], maze_info["height"], self.__CELL_HEIGHT, self.__parent.get_maze_screen_pos(), maze_info["finish"])
         self.__player = Player(self, 1, maze_info["player"], self.__CELL_HEIGHT)
         self.__enemies = [Enemy(self, 1, pos, self.__CELL_HEIGHT) for pos in maze_info["enemies"]]
         self.__MAZE_CELL_HEIGHT = maze_info["height"]
@@ -47,8 +47,11 @@ class LevelHandler:
     def level_loop(self) -> bool:
         while self.__exit_level == False:
             self.__user_move()
+            self.__check_game_state()
             if self.__exit_level == False:
                 self.__enemy_move()
+                self.__check_game_state()
+            
 
     def __user_move(self):
         user_turn = True
@@ -86,22 +89,38 @@ class LevelHandler:
                         self.__exit_level = True
                     if event.type == pygame.KEYDOWN:
                         pass #will add pause functionality at later point
+        
+        self.__canvas.fill((0,0,0))
+        self.__maze.draw_maze(self.__canvas)
+        self.__draw_entities()
+        pygame.display.update() #updates the window with any changes.
 
 
     def pause(self):
         pass
 
+    def __check_game_state(self) -> None:
+        if self.__check_game_loss() == True:
+            self.__game_over()
+        elif self.__check_game_win() == True:
+            self.__game_win()
+
     def __check_game_loss(self) -> bool:
-        pass
+        player_pos, enemy_poses = self.get_entity_positions()
+        return player_pos in enemy_poses
 
     def __check_game_win(self) -> bool:
-        pass
+        player_pos, _ = self.get_entity_positions()
+        finish_coord = self.__maze.get_finish_coord()
+        return player_pos == finish_coord
 
-    def game_over(self) -> bool:
-        pass
+    def __game_over(self) -> bool:
+        print("Game Over!")
+        self.__exit_level = True
 
-    def game_win(self) -> bool:
-        pass
+    def __game_win(self) -> bool:
+        print("Game Won!")
+        self.__exit_level = True
 
     def find_cell_adj_mat_index(self, maze_pos):
         maze_height = self.get_maze_cell_height()
