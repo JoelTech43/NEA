@@ -1,5 +1,6 @@
 from Maze import Maze
-from Entity import Player, Enemy
+from Enemy import Enemy
+from Player import Player
 import pygame
 
 class LevelHandler:
@@ -29,17 +30,18 @@ class LevelHandler:
                 ]
         }
 
-        self.__CELL_HEIGHT = self.__parent.get_maze_height()//maze_info["height"] #calculates cell height based on maze height.
+
+        self.__CELL_HEIGHT = self.__parent.get_maze_screen_height()//maze_info["height"] #calculates cell height based on maze height.
         self.__maze = Maze(self, maze_info["maze"], maze_info["height"], self.__CELL_HEIGHT, self.__parent.get_maze_screen_pos())
         self.__player = Player(self, 1, maze_info["player"], self.__CELL_HEIGHT)
         self.__enemies = [Enemy(self, 1, pos, self.__CELL_HEIGHT) for pos in maze_info["enemies"]]
-
+        self.__MAZE_CELL_HEIGHT = maze_info["height"]
+        
         #instantiate timer object
 
         self.__exit_level = False #level_loop runs until this is True
-
         #Adjacency matrix functionality
-        self.__route_adj_mat = [[None for cell in range(self.get_maze_height())] for row in range(self.get_maze_height())]
+        self.__route_adj_mat = [[None for cell in range(maze_info["height"]**2)] for row in range(maze_info["height"]**2)]
         
 
     def level_loop(self) -> bool:
@@ -66,8 +68,8 @@ class LevelHandler:
                     elif event.key in (pygame.K_s, pygame.K_DOWN):
                         self.__player.enter_move((0,1))
                     elif event.key in (pygame.K_RETURN, pygame.K_SPACE):
-                        self.__player.move_player()
-                        user_turn = False
+                        if self.__player.move_player() == True:
+                            user_turn = False
             self.__canvas.fill((0,0,0))
             self.__maze.draw_maze(self.__canvas)
             self.__draw_entities()
@@ -102,7 +104,7 @@ class LevelHandler:
         pass
 
     def find_cell_adj_mat_index(self, maze_pos):
-        maze_height = self.get_maze_height()
+        maze_height = self.get_maze_cell_height()
         ind = maze_pos[1]*maze_height + maze_pos[0]
         return ind
 
@@ -127,8 +129,11 @@ class LevelHandler:
     def get_enemies(self) -> list:
         return self.__enemies
     
-    def get_maze_height(self) -> int:
-        return self.__parent.get_maze_height()
+    def get_maze_screen_height(self) -> int:
+        return self.__parent.get_maze_screen_height()
+    
+    def get_maze_cell_height(self) -> int:
+        return self.__MAZE_CELL_HEIGHT
 
     def get_entity_positions(self) -> tuple|list:
         player_pos = self.__player.get_maze_pos()
