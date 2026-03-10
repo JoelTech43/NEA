@@ -2,6 +2,7 @@ from Maze import Maze
 from Enemy import Enemy
 from Player import Player
 import pygame
+import pygame_gui
 
 class LevelHandler:
     #__init__ method:
@@ -41,6 +42,8 @@ class LevelHandler:
         self.__player = Player(self, 1, maze_info["player"], self.__CELL_HEIGHT)
         self.__enemies = [Enemy(self, 1, pos, self.__CELL_HEIGHT) for pos in maze_info["enemies"]] #instantiates all needed Enemy objects and stores them in a list.
         self.__MAZE_CELL_HEIGHT = maze_info["height"]
+
+        self.__pause_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((0,0), (100,100)), text="⏸", manager=self.__gui_manager)
         
         #instantiate timer object
 
@@ -77,9 +80,21 @@ class LevelHandler:
                     elif event.key in (pygame.K_RETURN, pygame.K_SPACE):
                         if self.__player.move_player() == True: #__player.move_player() returns True if player has entered a valid direction and has been moved. If not, returns False and we keep checking for inputs.
                             user_turn = False #user has moved, so now enemies' moves.
+                
+                if event.type == pygame_gui.UI_BUTTON_PRESSED:
+                    if event.ui_element == self.__pause_button:
+                        print('Pause!')
+                
+                self.__gui_manager.process_events(event)
+            
+            self.__gui_manager.update(1/60)
+
             self.__canvas.fill((0,0,0)) #clear the screen
             self.__maze.draw_maze(self.__canvas) #redraw the maze
             self.__draw_entities() #draw enemies and player
+
+            self.__gui_manager.draw_ui(self.__canvas)
+
             pygame.display.update() #updates the window with any changes.
 
     #manages all of the tasks that need to be won 
@@ -183,6 +198,9 @@ class LevelHandler:
     #get_maze() - returns level handler's maze object
     def get_maze(self) -> Maze:
         return self.__maze
+    
+    def get_gui_manager(self) -> pygame_gui.UIManager:
+        return self.__gui_manager
     
     #__draw_entities() - draws player, and then draws enemy.
     def __draw_entities(self) -> None:
