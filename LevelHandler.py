@@ -12,6 +12,7 @@ class LevelHandler:
         self.__parent = parent
         self.__canvas = canvas
         self.__level_id = level_id
+        self.__gui_manager = parent.get_gui_manager()
 
         #would load maze info from file here, just using test data for now.
         maze_info = {
