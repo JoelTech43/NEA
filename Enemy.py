@@ -2,19 +2,28 @@ from Entity import Entity
 from random import choice
 
 class Enemy(Entity):
+    #__init__ method:
+    #parent is object that instantiated this object.
+    #move_distance is an integer representing how many cells the entity moves per turn.
+    #maze_pos is a tuple of (x, y) representing the position of the cell in maze - top left is (0, 0).
+    #cell_height is the height/width of the cell in px.
     def __init__(self, parent, move_distance: int, maze_pos: tuple, cell_height: int) -> None:
-        super().__init__(parent, move_distance, maze_pos, cell_height)
+        super().__init__(parent, move_distance, maze_pos, cell_height) #calls Entity's __init__ to do most of the setup
         self._col = (255,0,0)
 
+    #__find_shortest_route() - finds shortest route between Enemy's current position and the target cell.
+    #target_cell is a tuple (x,y) representing the coord in the maze that the enemy wants to move towards.
+    #Returns a tuple of tuples. Each inner tuple is the coord of the cells along the route. Route includes target_cell but not the start/current cell.
+    #Checks if a route for this start/dest is already in the level_handler's adjacency matrix - if so use it, if not calc the route and add it to the adj mat.
     def __find_shortest_route(self, target_cell: tuple) -> tuple:
-        adj_mat_route = self._parent.get_route_between_cells(self._maze_pos, target_cell)
+        adj_mat_route = self._parent.get_route_between_cells(self._maze_pos, target_cell) #either a route or None
         
-        if adj_mat_route == None:
-            cells = self._parent.get_maze().get_cells()
-            visited = []
-            potential = []
+        if adj_mat_route == None: #no route previously found.
+            cells = self._parent.get_maze().get_cells() #gets Maze's list of Cell objects.
+            visited = [] #cells we have been to + therefore have shortest route to.
+            potential = [] #cells we can move to from ones we have visited.
 
-            visiting_cell_coord = self._maze_pos
+            visiting_cell_coord = self._maze_pos #starts by visiting the cell enemy is currently in.
             
             visiting_cell = cells[visiting_cell_coord[1]][visiting_cell_coord[0]]
 
@@ -27,7 +36,7 @@ class Enemy(Entity):
 
                 considering_cell_coords = []
 
-                if walls[0] is False:
+                if walls[0] is False: #based on the walls around the visiting cell, add adjacent cells to considering
                     considering_coord = (visiting_cell_coord[0]-1, visiting_cell_coord[1])
                     considering_cell_coords.append(considering_coord)
                 

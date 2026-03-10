@@ -13,11 +13,13 @@ class Entity:
         self._cell_height = cell_height
         self._col = (0,0,255)
     
+    #draw_entity() - draws Entity on screen.
     def draw_entity(self, canvas) -> None:
         maze_screen_pos = self._parent.get_maze().get_screen_pos()
         player_screen_x = maze_screen_pos[0]+(self._maze_pos[0]*self._cell_height)+1
         player_screen_y = maze_screen_pos[1]+(self._maze_pos[1]*self._cell_height)+1
         pygame.draw.rect(canvas, self._col, (player_screen_x, player_screen_y, self._cell_height-2, self._cell_height-2))
 
+    #get_maze_pos() - returns Entity's _maze_pos attribute
     def get_maze_pos(self) -> tuple:
         return self._maze_pos

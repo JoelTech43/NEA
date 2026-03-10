@@ -81,90 +81,109 @@ class LevelHandler:
             self.__draw_entities() #draw enemies and player
             pygame.display.update() #updates the window with any changes.
 
+    #manages all of the tasks that need to be won 
     def __enemy_move(self):
-        for enemy in self.__enemies:
-            if self.__exit_level == False:
+        for enemy in self.__enemies: 
+            if self.__exit_level == False: #only moves enemy if we aren't ending level. Only True if user has pressed screen's X button during user turn or enemy turn.
                 enemy.make_calculated_move()
 
                 for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
+                    if event.type == pygame.QUIT: #if user clicks screen's X button, set __exit_level to True to escape level loop. Run GameHandler's save_and_quit method, closing program.
                         self.__parent.save_and_quit()
                         self.__exit_level = True
                     if event.type == pygame.KEYDOWN:
                         pass #will add pause functionality at later point
         
-        self.__canvas.fill((0,0,0))
-        self.__maze.draw_maze(self.__canvas)
-        self.__draw_entities()
+        self.__canvas.fill((0,0,0)) #clear screen
+        self.__maze.draw_maze(self.__canvas) #redraw the maze
+        self.__draw_entities() #draw enemies and player
         pygame.display.update() #updates the window with any changes.
 
-
+    #pause method - draws pause screen etc.
     def pause(self):
         pass
 
+    #__check_game_state() - checks if user has lost or won and calls the relevant method.
     def __check_game_state(self) -> None:
         if self.__check_game_loss() == True:
             self.__game_over()
         elif self.__check_game_win() == True:
             self.__game_win()
 
+    #__check_game_loss() - checks if user has same position in maze as any of the enemies.
     def __check_game_loss(self) -> bool:
         player_pos, enemy_poses = self.get_entity_positions()
         return player_pos in enemy_poses
 
+    #__check_game_win() - checks if user's maze position is the same as the finish square.
     def __check_game_win(self) -> bool:
         player_pos, _ = self.get_entity_positions()
         finish_coord = self.__maze.get_finish_coord()
         return player_pos == finish_coord
 
+    #__game_over() - will display game over method, sets __exit_level to false so that level loop ends, and will give user option to replay the same level.
     def __game_over(self) -> bool:
         print("Game Over!")
         self.__exit_level = True
 
+    #__game_win() - will display game won method, sets __exit_level to false so that level loop ends, and will give user option to replay the same level.
     def __game_win(self) -> bool:
         print("Game Won!")
         self.__exit_level = True
 
-    def find_cell_adj_mat_index(self, maze_pos):
+    #__find_cell_adj_mat_index() - turns the coordinate tuple representing a position in the maze into a single number representing that cell's index in the adjacency matrix.
+    #maze_pos is the coordinate of the cell in the maze that you want the index in the adjacency matrix of.
+    def __find_cell_adj_mat_index(self, maze_pos: tuple):
         maze_height = self.get_maze_cell_height()
-        ind = maze_pos[1]*maze_height + maze_pos[0]
+        ind = maze_pos[1]*maze_height + maze_pos[0] #index tarts with top left cell as 0 and then increases along the rows.
         return ind
 
+    #get_route_between_cells() - returns the shortest route between 2 cells stored in the adjacency matrix - tuple of tuples of coords, or None if route never been calculated
+    #start and dest are tuples of coordinates to find the route between.
     def get_route_between_cells(self, start: tuple, dest: tuple) -> None|tuple:
-        start_ind = self.find_cell_adj_mat_index(start)
-        dest_ind = self.find_cell_adj_mat_index(dest)
+        start_ind = self.__find_cell_adj_mat_index(start)
+        dest_ind = self.__find_cell_adj_mat_index(dest)
         route = self.__route_adj_mat[start_ind][dest_ind]
         return route
 
+    #set_route_between_cells() - if the provided route is shorter that the current stored one, store the new route.
+    #start and dest are tuples of coords to store route between, and route is a tuple of tuples storing coords along the route as tuples, not including start or dest.
     def set_route_between_cells(self, start: tuple, dest: tuple, route: tuple):
         current_route = self.get_route_between_cells(start, dest)
-        current_route_length = float("inf") if current_route == None else len(current_route)
-        start_ind = self.find_cell_adj_mat_index(start)
-        dest_ind = self.find_cell_adj_mat_index(dest)
-        if len(route) < current_route_length:
-            self.__route_adj_mat[start_ind][dest_ind] = route
-            self.__route_adj_mat[dest_ind][start_ind] = route[::-1]
+        current_route_length = float("inf") if current_route == None else len(current_route) #get the length of the current route (set to infinite if no route so that all routes are shorter.)
+        start_ind = self.__find_cell_adj_mat_index(start)
+        dest_ind = self.__find_cell_adj_mat_index(dest)
+        if len(route) < current_route_length: #if new route is shorter.
+            self.__route_adj_mat[start_ind][dest_ind] = route #add route from start to dest
+            self.__route_adj_mat[dest_ind][start_ind] = route[::-1] #route from dest to start is the reversed route.
 
+    #get_player() - returns the level handler's player object
     def get_player(self) -> Player:
         return self.__player
     
+    #get_enemies() - returns a list of the level handler's Enemy objects
     def get_enemies(self) -> list:
         return self.__enemies
     
+    #get_maze_screen_height() - returns game handler's height of maze in pixels on screen
     def get_maze_screen_height(self) -> int:
         return self.__parent.get_maze_screen_height()
     
+    #get_maze_cell_height() - returns level handler's maze height in terms of number of cells.
     def get_maze_cell_height(self) -> int:
         return self.__MAZE_CELL_HEIGHT
 
+    #get_entity_positions() - returns a tuple representing the current maze coord of the player and a list of tuple coordinates representing the current maze coords of the enemies.
     def get_entity_positions(self) -> tuple|list:
         player_pos = self.__player.get_maze_pos()
         enemy_poses = [enemy.get_maze_pos() for enemy in self.__enemies]
         return player_pos, enemy_poses
     
+    #get_maze() - returns level handler's maze object
     def get_maze(self) -> Maze:
         return self.__maze
     
+    #__draw_entities() - draws player, and then draws enemy.
     def __draw_entities(self) -> None:
         self.__player.draw_entity(self.__canvas)
         for enemy in self.__enemies:

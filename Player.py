@@ -2,11 +2,19 @@ from Entity import Entity
 import pygame
 
 class Player(Entity):
+    #__init__ method:
+    #parent is object that instantiated this object.
+    #move_distance is an integer representing how many cells the entity moves per turn.
+    #maze_pos is a tuple of (x, y) representing the position of the cell in maze - top left is (0, 0).
+    #cell_height is the height/width of the cell in px.
     def __init__(self, parent, move_distance: int, maze_pos: tuple, cell_height: int) -> None:
-        super().__init__(parent, move_distance, maze_pos, cell_height)
+        super().__init__(parent, move_distance, maze_pos, cell_height) #calls Entity's __init__ to do most of the setup
         self.__suggested_move = (0,0)
         self._col = (0,255,0)
     
+    #__validate_input() - takes direction player wants to move in and returns True if this is a valid move, and False if not.
+    #move_dir is a tuple representing direction to move (-1,0) is left, (1,0) is right, (0,-1) is up, (0,1) is down.
+    #checks if the move would place the player on the same square as an enemy, or if there is a wall blocking that direction.
     def __validate_input(self, move_dir: tuple) -> bool:
         current_cell_walls = self._parent.get_maze().get_cell(self._maze_pos).get_walls()
         maze_height = self._parent.get_maze().get_maze_height()
@@ -26,6 +34,7 @@ class Player(Entity):
         else:
             return False
 
+    #__display_suggested_move() - draws square to display the inputted move before it is confirmed
     def __display_suggested_move(self, canvas) -> None:
         suggested_x = self._maze_pos[0] + self.__suggested_move[0]
         suggested_y = self._maze_pos[1] + self.__suggested_move[1]
@@ -34,14 +43,17 @@ class Player(Entity):
         suggested_screen_y = maze_screen_pos[1]+(suggested_y*self._cell_height)+1
         pygame.draw.rect(canvas, (255,255,0), (suggested_screen_x, suggested_screen_y, self._cell_height-2, self._cell_height-2))
     
+    #draw_entity() - overrides the Entity draw_entity() method so that it displays the suggested move and then calls the parent method to draw the player.
     def draw_entity(self, canvas) -> None:
         self.__display_suggested_move(canvas)
         super().draw_entity(canvas)
     
-    def enter_move(self, move_dir):
+    #enter_move() - takes a move in the form of a tuple (change in x, change in y) and if valid it sets the Player's suggested_move to the direction.
+    def enter_move(self, move_dir:tuple):
         if self.__validate_input(move_dir) == True:
             self.__suggested_move = move_dir
 
+    #move_player() - moves the player in the direction stored in suggested move, returning True. If no direction entered (suggested_move = (0,0)) returns False.
     def move_player(self) -> bool:
         if self.__suggested_move != (0,0):
             x = self._maze_pos[0] + self.__suggested_move[0]
