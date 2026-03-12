@@ -15,6 +15,8 @@ class LevelHandler:
         self.__canvas = self.__gui_handler.get_canvas()
         self.__level_gui = self.__gui_handler.get_level_panel()
         self.__pause_menu_gui = self.__gui_handler.get_pause_menu_panel()
+        self.__settings_menu_gui = self.__gui_handler.get_settings_menu_panel()
+        self.__endgame_gui = self.__gui_handler.get_endgame_panel()
 
         #would load maze info from file here, just using test data for now.
         maze_info = {
@@ -46,16 +48,23 @@ class LevelHandler:
         #instantiate timer object
 
         self.__exit_level = False #level_loop runs until this is True
+        self.__paused = False
+
+        self.__collectibles_collected = 0
+        self.__level_success = False
 
         self.__route_adj_mat = [[None for cell in range(maze_info["height"]**2)] for row in range(maze_info["height"]**2)] #creates empty adjacency matrix - 2D array. Number of rows/columns is total number of cells in maze.
         #adjacency matrix will be updated with shortest routes between cells as they are calculated by the A* algorithm.
 
     #level_loop method contains the loop that repeats for the whole level. Once this ends, the program returns to GameHandler's main game loop.
-    def level_loop(self) -> bool:
+    def level_loop(self) -> tuple:
+        self.__level_gui["panel"].show()
         while self.__exit_level == False:
             self.__user_move() #let user move
             self.__enemy_move() #calculate enemy moves and move them
-            self.__check_game_state() #check if player has won or lost and take relevant action
+            replay = self.__check_game_state() #check if player has won or lost and take relevant action
+        self.__level_gui["panel"].hide()
+        return self.__collectibles_collected, self.__level_success, replay
 
     #runs when it is the user's turn.
     def __user_move(self):
@@ -127,13 +136,78 @@ class LevelHandler:
     def pause(self):
         self.__level_gui["panel"].hide()
         self.__pause_menu_gui["panel"].show()
+        self.__paused = True
+        while self.__paused == True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT: #if user clicks screen's X button, set __exit_level to True to escape level loop. Run GameHandler's save_and_quit method, closing program.
+                    self.__parent.save_and_quit()
+                    self.__exit_level = True
+                    self.__paused = False
+                if event.type == pygame.KEYDOWN:
+                    pass #will add pause functionality at later point
+
+                if event.type == pygame_gui.UI_BUTTON_PRESSED:
+                    if event.ui_element == self.__pause_menu_gui["btn_resume"]:
+                        self.__paused = False
+                    
+                    elif event.ui_element == self.__pause_menu_gui["btn_pause_settings"]:
+                        self.settings_menu()
+                    
+                    elif event.ui_element == self.__pause_menu_gui["btn_restart"]:
+                        ...
+                
+                self.__gui_handler.process_events(event)
+            
+            self.__gui_handler.update(1/60)
+
+            self.__canvas.fill((0,0,0)) #clear screen
+            
+            self.__gui_handler.draw_ui()
+            pygame.display.update() #updates the window with any changes.
+        
+        self.__pause_menu_gui["panel"].hide()
+        self.__level_gui["panel"].show()
+
+    def settings_menu(self):
+        self.__pause_menu_gui["panel"].hide()
+        self.__settings_menu_gui["panel"].show()
+
+        settings_open = True
+        while settings_open == True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT: #if user clicks screen's X button, set __exit_level to True to escape level loop. Run GameHandler's save_and_quit method, closing program.
+                    self.__parent.save_and_quit()
+                    self.__exit_level = True
+                    self.__paused = False
+                    settings_open = False
+                if event.type == pygame.KEYDOWN:
+                    pass #will add pause functionality at later point
+
+                if event.type == pygame_gui.UI_BUTTON_PRESSED:
+                    if event.ui_element == self.__settings_menu_gui["btn_exit_settings"]:
+                        settings_open = False
+                
+                self.__gui_handler.process_events(event)
+            
+            self.__gui_handler.update(1/60)
+
+            self.__canvas.fill((0,0,0)) #clear screen
+            
+            self.__gui_handler.draw_ui()
+            pygame.display.update() #updates the window with any changes.
+        
+        self.__settings_menu_gui["panel"].hide()
+        self.__pause_menu_gui["panel"].show()
 
     #__check_game_state() - checks if user has lost or won and calls the relevant method.
-    def __check_game_state(self) -> None:
+    def __check_game_state(self) -> bool:
         if self.__check_game_loss() == True:
-            self.__game_over()
+            replay = self.__game_over()
         elif self.__check_game_win() == True:
-            self.__game_win()
+            self.__level_success = True
+            replay = self.__game_win()
+        
+        return replay
 
     #__check_game_loss() - checks if user has same position in maze as any of the enemies.
     def __check_game_loss(self) -> bool:
@@ -148,13 +222,77 @@ class LevelHandler:
 
     #__game_over() - will display game over method, sets __exit_level to false so that level loop ends, and will give user option to replay the same level.
     def __game_over(self) -> bool:
-        print("Game Over!")
+        self.__endgame_gui["txt_endgame_title"].set_text("Game Over!")
+        self.__level_gui["panel"].hide()
+        self.__endgame_gui["panel"].show()
+        replay = False
         self.__exit_level = True
+        exit_screen = False
+        while exit_screen == False:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT: #if user clicks screen's X button, set __exit_level to True to escape level loop. Run GameHandler's save_and_quit method, closing program.
+                    self.__parent.save_and_quit()
+                    self.__exit_level = True
+                    self.__paused = False
+                    exit_screen = False
+
+                if event.type == pygame_gui.UI_BUTTON_PRESSED:
+                    if event.ui_element == self.__endgame_gui["btn_return"]:
+                        exit_screen = True
+                    
+                    elif event.ui_element == self.__endgame_gui["btn_replay"]:
+                        replay = True
+                        exit_screen = True
+                
+                self.__gui_handler.process_events(event)
+            
+            self.__gui_handler.update(1/60)
+
+            self.__canvas.fill((0,0,0)) #clear screen
+            
+            self.__gui_handler.draw_ui()
+            pygame.display.update() #updates the window with any changes.
+
+        self.__endgame_gui["panel"].hide()
+        self.__level_gui["panel"].hide()
+        return replay
 
     #__game_win() - will display game won method, sets __exit_level to false so that level loop ends, and will give user option to replay the same level.
     def __game_win(self) -> bool:
-        print("Game Won!")
+        self.__endgame_gui["txt_endgame_title"].set_text("Level Complete!")
+        self.__level_gui["panel"].hide()
+        self.__endgame_gui["panel"].show()
+        replay = False
         self.__exit_level = True
+        exit_screen = False
+        while exit_screen == False:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT: #if user clicks screen's X button, set __exit_level to True to escape level loop. Run GameHandler's save_and_quit method, closing program.
+                    self.__parent.save_and_quit()
+                    self.__exit_level = True
+                    self.__paused = False
+                    exit_screen = False
+
+                if event.type == pygame_gui.UI_BUTTON_PRESSED:
+                    if event.ui_element == self.__endgame_gui["btn_return"]:
+                        exit_screen = True
+                    
+                    elif event.ui_element == self.__endgame_gui["btn_replay"]:
+                        replay = True
+                        exit_screen = True
+                
+                self.__gui_handler.process_events(event)
+            
+            self.__gui_handler.update(1/60)
+
+            self.__canvas.fill((0,0,0)) #clear screen
+            
+            self.__gui_handler.draw_ui()
+            pygame.display.update() #updates the window with any changes.
+
+        self.__endgame_gui["panel"].hide()
+        self.__level_gui["panel"].hide()
+        return replay
 
     #__find_cell_adj_mat_index() - turns the coordinate tuple representing a position in the maze into a single number representing that cell's index in the adjacency matrix.
     #maze_pos is the coordinate of the cell in the maze that you want the index in the adjacency matrix of.
