@@ -1,0 +1,19 @@
+{
+    "panel":{
+        "misc": {
+            "shape": "rectangle"
+        },
+        "colours": {
+            "dark_bg": "#00000000",
+            "normal_border": "#00000000"
+        },
+        "border": {
+            "width": "0"
+        }
+    },
+    "#colour_rect":{
+        "colours":{
+            "dark_bg": "#ff0000"
+        }
+    }
+}

@@ -9,6 +9,7 @@ class Maze:
     #screen_pos is a tuple (x, y) where x and y are integers. Represents coord in screen of top left of maze.
     def __init__(self, parent, cell_array: list, maze_height: int, cell_height: int, screen_pos: tuple, finish_coord: tuple) -> None:
         self.__parent = parent
+        self.__gui_handler = self.__parent.get_gui_handler()
         self.__maze_height = maze_height
         self.__screen_pos = screen_pos
         self.__cell_height = cell_height
@@ -23,7 +24,8 @@ class Maze:
             self.__cells.append(new_row) #appending the row to the full list of cells.
     
     #draw_maze() - calls each cell's draw_cell method before drawing the finish square.
-    def draw_maze(self, canvas):
+    def draw_maze(self):
+        canvas = self.__gui_handler.get_canvas()
         for row in self.__cells: #go through each row.
             for cell in row: #then each cell in the row.
                 cell.draw_cell(canvas) #and call the cell's draw_cell method, to draw it on the canvas.

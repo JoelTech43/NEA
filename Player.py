@@ -35,7 +35,8 @@ class Player(Entity):
             return False
 
     #__display_suggested_move() - draws square to display the inputted move before it is confirmed
-    def __display_suggested_move(self, canvas) -> None:
+    def __display_suggested_move(self) -> None:
+        canvas = self._gui_handler.get_canvas()
         suggested_x = self._maze_pos[0] + self.__suggested_move[0]
         suggested_y = self._maze_pos[1] + self.__suggested_move[1]
         maze_screen_pos = self._parent.get_maze().get_screen_pos()
@@ -44,9 +45,9 @@ class Player(Entity):
         pygame.draw.rect(canvas, (255,255,0), (suggested_screen_x, suggested_screen_y, self._cell_height-2, self._cell_height-2))
     
     #draw_entity() - overrides the Entity draw_entity() method so that it displays the suggested move and then calls the parent method to draw the player.
-    def draw_entity(self, canvas) -> None:
-        self.__display_suggested_move(canvas)
-        super().draw_entity(canvas)
+    def draw_entity(self) -> None:
+        self.__display_suggested_move()
+        super().draw_entity()
     
     #enter_move() - takes a move in the form of a tuple (change in x, change in y) and if valid it sets the Player's suggested_move to the direction.
     def enter_move(self, move_dir:tuple):

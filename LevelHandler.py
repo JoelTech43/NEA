@@ -7,13 +7,14 @@ import pygame_gui
 class LevelHandler:
     #__init__ method:
     #parent is object that instantiated this object, GameHandler in this case.
-    #canvas is the pygame screen to draw on.
     #level_id is an integer what maze is to be loaded.
-    def __init__(self, parent, canvas, level_id: int) -> None:
+    def __init__(self, parent, level_id: int) -> None:
         self.__parent = parent
-        self.__canvas = canvas
         self.__level_id = level_id
-        self.__gui_manager = parent.get_gui_manager()
+        self.__gui_handler = self.__parent.get_gui_handler()
+        self.__canvas = self.__gui_handler.get_canvas()
+        self.__level_gui = self.__gui_handler.get_level_panel()
+        self.__pause_menu_gui = self.__gui_handler.get_pause_menu_panel()
 
         #would load maze info from file here, just using test data for now.
         maze_info = {
@@ -36,14 +37,11 @@ class LevelHandler:
                 ]
         }
 
-
-        self.__CELL_HEIGHT = self.__parent.get_maze_screen_height()//maze_info["height"] #calculates cell height in pixels by dividing the height of the maze in pixels by number of cells in a column.
-        self.__maze = Maze(self, maze_info["maze"], maze_info["height"], self.__CELL_HEIGHT, self.__parent.get_maze_screen_pos(), maze_info["finish"]) 
+        self.__CELL_HEIGHT = self.__gui_handler.get_maze_screen_height()//maze_info["height"] #calculates cell height in pixels by dividing the height of the maze in pixels by number of cells in a column.
+        self.__maze = Maze(self, maze_info["maze"], maze_info["height"], self.__CELL_HEIGHT, self.__gui_handler.get_maze_screen_pos(), maze_info["finish"]) 
         self.__player = Player(self, 1, maze_info["player"], self.__CELL_HEIGHT)
         self.__enemies = [Enemy(self, 1, pos, self.__CELL_HEIGHT) for pos in maze_info["enemies"]] #instantiates all needed Enemy objects and stores them in a list.
         self.__MAZE_CELL_HEIGHT = maze_info["height"]
-
-        self.__pause_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((0,0), (100,100)), text="⏸", manager=self.__gui_manager)
         
         #instantiate timer object
 
@@ -82,18 +80,18 @@ class LevelHandler:
                             user_turn = False #user has moved, so now enemies' moves.
                 
                 if event.type == pygame_gui.UI_BUTTON_PRESSED:
-                    if event.ui_element == self.__pause_button:
-                        print('Pause!')
+                    if event.ui_element == self.__level_gui["btn_pause"]:
+                        self.pause()
                 
-                self.__gui_manager.process_events(event)
+                self.__gui_handler.process_events(event)
             
-            self.__gui_manager.update(1/60)
+            self.__gui_handler.update(1/60)
 
             self.__canvas.fill((0,0,0)) #clear the screen
-            self.__maze.draw_maze(self.__canvas) #redraw the maze
+            self.__maze.draw_maze() #redraw the maze
             self.__draw_entities() #draw enemies and player
 
-            self.__gui_manager.draw_ui(self.__canvas)
+            self.__gui_handler.draw_ui()
 
             pygame.display.update() #updates the window with any changes.
 
@@ -110,14 +108,25 @@ class LevelHandler:
                     if event.type == pygame.KEYDOWN:
                         pass #will add pause functionality at later point
         
+                    if event.type == pygame_gui.UI_BUTTON_PRESSED:
+                        if event.ui_element == self.__level_gui["btn_pause"]:
+                            print('Pause!')
+                            self.__level_gui["btn_pause"].hide()
+                    
+                    self.__gui_handler.process_events(event)
+
+        self.__gui_handler.update(1/60)
+
         self.__canvas.fill((0,0,0)) #clear screen
-        self.__maze.draw_maze(self.__canvas) #redraw the maze
+        self.__maze.draw_maze() #redraw the maze
         self.__draw_entities() #draw enemies and player
+        self.__gui_handler.draw_ui()
         pygame.display.update() #updates the window with any changes.
 
     #pause method - draws pause screen etc.
     def pause(self):
-        pass
+        self.__level_gui["panel"].hide()
+        self.__pause_menu_gui["panel"].show()
 
     #__check_game_state() - checks if user has lost or won and calls the relevant method.
     def __check_game_state(self) -> None:
@@ -181,10 +190,6 @@ class LevelHandler:
     def get_enemies(self) -> list:
         return self.__enemies
     
-    #get_maze_screen_height() - returns game handler's height of maze in pixels on screen
-    def get_maze_screen_height(self) -> int:
-        return self.__parent.get_maze_screen_height()
-    
     #get_maze_cell_height() - returns level handler's maze height in terms of number of cells.
     def get_maze_cell_height(self) -> int:
         return self.__MAZE_CELL_HEIGHT
@@ -199,11 +204,11 @@ class LevelHandler:
     def get_maze(self) -> Maze:
         return self.__maze
     
-    def get_gui_manager(self) -> pygame_gui.UIManager:
-        return self.__gui_manager
+    def get_gui_handler(self):
+        return self.__gui_handler
     
     #__draw_entities() - draws player, and then draws enemy.
     def __draw_entities(self) -> None:
-        self.__player.draw_entity(self.__canvas)
+        self.__player.draw_entity()
         for enemy in self.__enemies:
-            enemy.draw_entity(self.__canvas)
+            enemy.draw_entity()

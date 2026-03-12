@@ -8,13 +8,15 @@ class Entity:
     #cell_height is the height/width of the cell in px.
     def __init__(self, parent, move_distance: int, maze_pos: tuple, cell_height: int) -> None:
         self._parent = parent
+        self._gui_handler = self._parent.get_gui_handler()
         self._move_distance = move_distance
         self._maze_pos = maze_pos
         self._cell_height = cell_height
         self._col = (0,0,255)
     
     #draw_entity() - draws Entity on screen.
-    def draw_entity(self, canvas) -> None:
+    def draw_entity(self) -> None:
+        canvas = self._gui_handler.get_canvas()
         maze_screen_pos = self._parent.get_maze().get_screen_pos()
         player_screen_x = maze_screen_pos[0]+(self._maze_pos[0]*self._cell_height)+1
         player_screen_y = maze_screen_pos[1]+(self._maze_pos[1]*self._cell_height)+1
