@@ -91,7 +91,7 @@ class GameHandler:
     #level_id is an integer representing what level is to be loaded.
     def __play_level(self):
         self.__main_menu_gui["panel"].hide()
-        
+
         replay = True
         while replay == True:
             level_handler = LevelHandler(self, self.__user_data["current_level"]) #instantiate LevelHandler

@@ -22,7 +22,7 @@ class LevelHandler:
         maze_info = {
             "height": 10,
             "width": 10,
-            "player": (4, 0),
+            "player": (5, 8),
             "finish": (5, 9),
             "enemies": [(7, 8),(4, 5),(2, 3),(7, 3)],
             "maze": [
@@ -52,6 +52,7 @@ class LevelHandler:
 
         self.__collectibles_collected = 0
         self.__level_success = False
+        self.__replay = False
 
         self.__route_adj_mat = [[None for cell in range(maze_info["height"]**2)] for row in range(maze_info["height"]**2)] #creates empty adjacency matrix - 2D array. Number of rows/columns is total number of cells in maze.
         #adjacency matrix will be updated with shortest routes between cells as they are calculated by the A* algorithm.
@@ -62,14 +63,14 @@ class LevelHandler:
         while self.__exit_level == False:
             self.__user_move() #let user move
             self.__enemy_move() #calculate enemy moves and move them
-            replay = self.__check_game_state() #check if player has won or lost and take relevant action
+            self.__check_game_state() #check if player has won or lost and take relevant action
         self.__level_gui["panel"].hide()
-        return self.__collectibles_collected, self.__level_success, replay
+        return self.__collectibles_collected, self.__level_success, self.__replay
 
     #runs when it is the user's turn.
     def __user_move(self):
         user_turn = True
-        while user_turn == True: #runs until player chooses to quit the game (presses X on window), or has moved the character.
+        while user_turn == True and self.__exit_level == False: #runs until player chooses to quit the game (presses X on window), or has moved the character.
             for event in pygame.event.get(): #run through all pygame events since last checked.
                 if event.type == pygame.QUIT: #if user clicks close button, set user_turn to False and __exit_level to True to escape level loop. Run GameHandler's save_and_quit method, closing program.
                     self.__parent.save_and_quit()
@@ -119,8 +120,7 @@ class LevelHandler:
         
                     if event.type == pygame_gui.UI_BUTTON_PRESSED:
                         if event.ui_element == self.__level_gui["btn_pause"]:
-                            print('Pause!')
-                            self.__level_gui["btn_pause"].hide()
+                            self.pause()
                     
                     self.__gui_handler.process_events(event)
 
@@ -154,7 +154,15 @@ class LevelHandler:
                         self.settings_menu()
                     
                     elif event.ui_element == self.__pause_menu_gui["btn_restart"]:
-                        ...
+                        self.__exit_level = True
+                        self.__replay = True
+                        self.__paused = False
+                        self.__pause_menu_gui["panel"].hide()
+                        self.__level_gui["panel"].show()
+                    
+                    elif event.ui_element == self.__pause_menu_gui["btn_quit_level"]:
+                        self.__paused = False
+                        self.__exit_level = True
                 
                 self.__gui_handler.process_events(event)
             
@@ -200,14 +208,12 @@ class LevelHandler:
         self.__pause_menu_gui["panel"].show()
 
     #__check_game_state() - checks if user has lost or won and calls the relevant method.
-    def __check_game_state(self) -> bool:
+    def __check_game_state(self) -> None:
         if self.__check_game_loss() == True:
-            replay = self.__game_over()
+            self.__replay = self.__game_over()
         elif self.__check_game_win() == True:
             self.__level_success = True
-            replay = self.__game_win()
-        
-        return replay
+            self.__replay = self.__game_win()
 
     #__check_game_loss() - checks if user has same position in maze as any of the enemies.
     def __check_game_loss(self) -> bool:
@@ -234,7 +240,7 @@ class LevelHandler:
                     self.__parent.save_and_quit()
                     self.__exit_level = True
                     self.__paused = False
-                    exit_screen = False
+                    exit_screen = True
 
                 if event.type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.__endgame_gui["btn_return"]:
@@ -271,7 +277,7 @@ class LevelHandler:
                     self.__parent.save_and_quit()
                     self.__exit_level = True
                     self.__paused = False
-                    exit_screen = False
+                    exit_screen = True
 
                 if event.type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.__endgame_gui["btn_return"]:
