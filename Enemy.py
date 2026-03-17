@@ -28,32 +28,33 @@ class Enemy(Entity):
             visiting_cell = cells[visiting_cell_coord[1]][visiting_cell_coord[0]]
 
             visiting_cell.update_estimate(0, 10000) #10000 as lower than infinity (so updates cell distance values) but large enough to never be smaller than an actual calculated value.
-
+            count = 0
             while visiting_cell_coord != target_cell:
+                count += 1
                 visited.append(visiting_cell_coord)
                 
                 walls = visiting_cell.get_walls()
 
                 considering_cell_coords = []
 
-                if walls[0] is False: #based on the walls around the visiting cell, add adjacent cells to considering
+                if walls[0] == False: #based on the walls around the visiting cell, add adjacent cells to considering
                     considering_coord = (visiting_cell_coord[0]-1, visiting_cell_coord[1])
                     considering_cell_coords.append(considering_coord)
                 
-                if walls[1] is False:
+                if walls[1] == False:
                     considering_coord = (visiting_cell_coord[0], visiting_cell_coord[1]-1)
                     considering_cell_coords.append(considering_coord)
                 
-                if walls[2] is False:
+                if walls[2] == False:
                     considering_coord = (visiting_cell_coord[0]+1, visiting_cell_coord[1])
                     considering_cell_coords.append(considering_coord)
                 
-                if walls[3] is False:
+                if walls[3] == False:
                     considering_coord = (visiting_cell_coord[0], visiting_cell_coord[1]+1)
                     considering_cell_coords.append(considering_coord)
                 
                 for considering_coord in considering_cell_coords:
-                    if considering_coord not in visited: #don't attempt to update visited cells as they already have shortest route
+                    if considering_coord not in visited: #don't attempt to update visited cells as they already have shortest route.
                         potential.append(considering_coord)
                         considering_cell = cells[considering_coord[1]][considering_coord[0]]
 
@@ -69,10 +70,17 @@ class Enemy(Entity):
 
                 potential.sort(key=lambda coord: (cells[coord[1]][coord[0]].get_overall_estimate(), cells[coord[1]][coord[0]].get_heuristic_estimate())) #sort primarily by total estimate, then by heuristic estimate.
 
-                visiting_cell_coord = potential[0]
-                del potential[0]
+                if len(potential) > 0:
+                    visiting_cell_coord = potential[0]
+                    del potential[0]
 
-                visiting_cell = cells[visiting_cell_coord[1]][visiting_cell_coord[0]]
+                    visiting_cell = cells[visiting_cell_coord[1]][visiting_cell_coord[0]]
+                else:
+                    visited.sort(key=lambda coord: (cells[coord[1]][coord[0]].get_heuristic_estimate(), cells[coord[1]][coord[0]].get_overall_estimate())) #sort by heuristic (dist to end) and then overall so that we get closest cell to end that is also closest to start.
+            
+                    visiting_cell_coord = visited[0]
+                    visiting_cell = cells[visiting_cell_coord[1]][visiting_cell_coord[0]]
+                    visiting_cell_coord = target_cell #to exit while loop
 
             #out of loop so visiting_cell is destination
             route = [] #list to hold all coords along shortest route
@@ -99,11 +107,39 @@ class Enemy(Entity):
                     new_route = [cell_coord for cell_coord in shortest_route[start_cell_ind+1:dest_cell_ind]] #route between start_cell and dest_cell, not including either.
                     self._parent.set_route_between_cells(shortest_route[start_cell_ind], shortest_route[dest_cell_ind], new_route)
 
+    def __get_possible_moves(self) -> list:
+        _, enemy_poses = self._parent.get_entity_positions()
+        cells = self._parent.get_maze().get_cells() #gets Maze's list of Cell objects.
+        current_cell = cells[self._maze_pos[1]][self._maze_pos[0]]
+        walls = current_cell.get_walls()
+        possible_moves = []
+        if walls[0] == False: #based on the walls around the visiting cell, add adjacent cells to possible moves
+            possible_coord = (self._maze_pos[0]-1, self._maze_pos[1])
+            if possible_coord not in enemy_poses:
+                possible_moves.append(possible_coord)
+
+        if walls[1] == False:
+            possible_coord = (self._maze_pos[0], self._maze_pos[1]-1)
+            if possible_coord not in enemy_poses:
+                possible_moves.append(possible_coord)
+        
+        if walls[2] == False:
+            possible_coord = (self._maze_pos[0]+1, self._maze_pos[1])
+            if possible_coord not in enemy_poses:
+                possible_moves.append(possible_coord)
+        
+        if walls[3] == False:
+            possible_coord = (self._maze_pos[0], self._maze_pos[1]+1)
+            if possible_coord not in enemy_poses:
+                possible_moves.append(possible_coord)
+        
+        return possible_moves
+
+
     def __move_enemy(self, dest: tuple) -> None:
         _, enemy_poses = self._parent.get_entity_positions()
         if dest in enemy_poses:
-            options = [(self._maze_pos[0]-1,self._maze_pos[1]),(self._maze_pos[0]+1,self._maze_pos[1]),(self._maze_pos[0],self._maze_pos[1]-1),(self._maze_pos[0]-1,self._maze_pos[1]+1)]
-            options.remove(dest)
+            options = self.__get_possible_moves()
             dest = choice(options)
         
         self._maze_pos = dest

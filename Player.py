@@ -42,7 +42,10 @@ class Player(Entity):
         maze_screen_pos = self._parent.get_maze().get_screen_pos()
         suggested_screen_x = maze_screen_pos[0]+(suggested_x*self._cell_height)+1
         suggested_screen_y = maze_screen_pos[1]+(suggested_y*self._cell_height)+1
-        pygame.draw.rect(canvas, (255,255,0), (suggested_screen_x, suggested_screen_y, self._cell_height-2, self._cell_height-2))
+        #pygame.draw.rect(canvas, (255, 204, 0), (suggested_screen_x, suggested_screen_y, self._cell_height-2, self._cell_height-2))
+        surface = pygame.Surface((self._cell_height-2, self._cell_height-2), pygame.SRCALPHA)
+        surface.fill((self._col[0], self._col[1], self._col[2], 120))
+        canvas.blit(surface, (suggested_screen_x, suggested_screen_y))
     
     #draw_entity() - overrides the Entity draw_entity() method so that it displays the suggested move and then calls the parent method to draw the player.
     def draw_entity(self) -> None:

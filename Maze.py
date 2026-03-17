@@ -7,13 +7,14 @@ class Maze:
     #maze_height is a integer representing how many rows/cols the maze has,
     #cell_height is the height of each cell in pixels.
     #screen_pos is a tuple (x, y) where x and y are integers. Represents coord in screen of top left of maze.
-    def __init__(self, parent, cell_array: list, maze_height: int, cell_height: int, screen_pos: tuple, finish_coord: tuple) -> None:
+    def __init__(self, parent, cell_array: list, maze_height: int, cell_height: int, screen_pos: tuple, finish_coord: tuple, collectibles_coords: tuple) -> None:
         self.__parent = parent
         self.__gui_handler = self.__parent.get_gui_handler()
         self.__maze_height = maze_height
         self.__screen_pos = screen_pos
         self.__cell_height = cell_height
         self.__finish_coord = finish_coord
+        self.__collectibles_coords = list(collectibles_coords)
         self.__cells = [] #will be a 2D list of Cell objects, each inner list is a row in the maze.
 
         for row in range(self.__maze_height):
@@ -34,6 +35,15 @@ class Maze:
         finish_cell_screen_x = self.__screen_pos[0]+(self.__cell_height*self.__finish_coord[0])+1 #define the position of the top left corner of the finish square on the screen.
         finish_cell_screen_y = self.__screen_pos[1]+(self.__cell_height*self.__finish_coord[1])+1
         pygame.draw.rect(canvas, (0,0,255), (finish_cell_screen_x, finish_cell_screen_y, self.__cell_height-2, self.__cell_height-2))
+
+        for coord in self.__collectibles_coords:
+            collectible_screen_x = self.__screen_pos[0]+(self.__cell_height*coord[0])+1
+            collectible_screen_y = self.__screen_pos[1]+(self.__cell_height*coord[1])+1
+            pygame.draw.rect(canvas, (255,255,0), (collectible_screen_x, collectible_screen_y, self.__cell_height-2, self.__cell_height-2))
+    
+    def remove_collectible(self, coord: tuple) -> None:
+        if coord in self.__collectibles_coords:
+            self.__collectibles_coords.remove(coord)
     
     #get_screen_pos() - returns the top left screen coordinate of the maze
     def get_screen_pos(self) -> tuple:

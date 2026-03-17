@@ -3,6 +3,7 @@ from Enemy import Enemy
 from Player import Player
 import pygame
 import pygame_gui
+import json
 
 class LevelHandler:
     #__init__ method:
@@ -19,28 +20,32 @@ class LevelHandler:
         self.__endgame_gui = self.__gui_handler.get_endgame_panel()
 
         #would load maze info from file here, just using test data for now.
-        maze_info = {
-            "height": 10,
-            "width": 10,
-            "player": (5, 8),
-            "finish": (5, 9),
-            "enemies": [(7, 8),(4, 5),(2, 3),(7, 3)],
-            "maze": [
-                [[True, True, False, False],[False, True, False, False],[False, True, False, True],[False, True, True, True],[True, True, False, False],[False, True, False, True],[False, True, False, True],[False, True, True, False],[True, True, False, True],[False, True, True, False]],
-                [[True, False, True, False],[True, False, False, True],[False, True, False, True],[False, True, True, False],[True, False, False, True],[False, True, True, False],[True, True, False, False],[False, False, True, True],[True, True, False, False],[False, False, True, False]],
-                [[True, False, False, True],[False, True, False, False],[False, True, True, False],[True, False, True, False],[True, True, False, False],[False, False, True, True],[True, False, False, True],[False, True, False, True],[False, False, True, True],[True, False, True, False]],
-                [[True, True, False, False],[False, False, True, True],[True, False, True, True],[True, False, False, True],[False, False, True, True],[True, True, False, False],[False, True, False, True],[False, True, False, True],[False, True, True, True],[True, False, True, False]],
-                [[True, False, False, True],[False, True, False, False],[False, True, True, False],[True, True, False, False],[False, True, True, False],[True, False, False, True],[False, True, False, False],[False, True, False, True],[False, True, False, True],[False, False, True, True]],
-                [[True, True, False, False],[False, False, True, True],[True, False, False, True],[False, False, True, True],[True, False, True, False],[True, True, False, False],[False, False, True, True],[True, True, False, True],[False, True, False, True],[False, True, True, False]],
-                [[True, False, True, False],[True, True, False, True],[False, True, False, True],[False, True, False, True],[False, False, True, True],[True, False, False, True],[False, True, False, True],[False, True, False, True],[False, True, True, False],[True, False, True, False]],
-                [[True, False, True, False],[True, True, False, False],[False, True, False, True],[False, True, True, False],[True, True, False, False],[False, True, True, False],[True, True, True, False],[True, True, False, False],[False, False, False, True],[False, False, True, True]],
-                [[True, False, True, False],[True, False, True, False],[True, True, False, False],[False, False, True, True],[True, False, True, False],[True, False, True, False],[True, False, True, False],[True, False, False, False],[False, True, True, False],[True, True, True, False]],
-                [[True, False, False, True],[False, False, True, True],[True, False, False, True],[False, True, False, True],[False, False, True, True],[True, False, True, True],[True, False, False, True],[False, False, True, True],[True, False, False, True],[False, False, True, True]]
-                ]
-        }
+        # maze_info = {
+        #     "height": 10,
+        #     "width": 10,
+        #     "player": (4, 0),
+        #     "finish": (5, 9),
+        #     "enemies": [],#(7, 8),(4, 5),(2, 3),(7, 3)],
+        #     "collectibles": [(3, 4), (5, 8), (1, 4)],
+        #     "maze": [
+        #         [[True, True, False, False],[False, True, False, False],[False, True, False, True],[False, True, True, True],[True, True, False, False],[False, True, False, True],[False, True, False, True],[False, True, True, False],[True, True, False, True],[False, True, True, False]],
+        #         [[True, False, True, False],[True, False, False, True],[False, True, False, True],[False, True, True, False],[True, False, False, True],[False, True, True, False],[True, True, False, False],[False, False, True, True],[True, True, False, False],[False, False, True, False]],
+        #         [[True, False, False, True],[False, True, False, False],[False, True, True, False],[True, False, True, False],[True, True, False, False],[False, False, True, True],[True, False, False, True],[False, True, False, True],[False, False, True, True],[True, False, True, False]],
+        #         [[True, True, False, False],[False, False, True, True],[True, False, True, True],[True, False, False, True],[False, False, True, True],[True, True, False, False],[False, True, False, True],[False, True, False, True],[False, True, True, True],[True, False, True, False]],
+        #         [[True, False, False, True],[False, True, False, False],[False, True, True, False],[True, True, False, False],[False, True, True, False],[True, False, False, True],[False, True, False, False],[False, True, False, True],[False, True, False, True],[False, False, True, True]],
+        #         [[True, True, False, False],[False, False, True, True],[True, False, False, True],[False, False, True, True],[True, False, True, False],[True, True, False, False],[False, False, True, True],[True, True, False, True],[False, True, False, True],[False, True, True, False]],
+        #         [[True, False, True, False],[True, True, False, True],[False, True, False, True],[False, True, False, True],[False, False, True, True],[True, False, False, True],[False, True, False, True],[False, True, False, True],[False, True, True, False],[True, False, True, False]],
+        #         [[True, False, True, False],[True, True, False, False],[False, True, False, True],[False, True, True, False],[True, True, False, False],[False, True, True, False],[True, True, True, False],[True, True, False, False],[False, False, False, True],[False, False, True, True]],
+        #         [[True, False, True, False],[True, False, True, False],[True, True, False, False],[False, False, True, True],[True, False, True, False],[True, False, True, False],[True, False, True, False],[True, False, False, False],[False, True, True, False],[True, True, True, False]],
+        #         [[True, False, False, True],[False, False, True, True],[True, False, False, True],[False, True, False, True],[False, False, True, True],[True, False, True, True],[True, False, False, True],[False, False, True, True],[True, False, False, True],[False, False, True, True]]
+        #         ]
+        # }
+
+        maze_info = self.load_maze()
 
         self.__CELL_HEIGHT = self.__gui_handler.get_maze_screen_height()//maze_info["height"] #calculates cell height in pixels by dividing the height of the maze in pixels by number of cells in a column.
-        self.__maze = Maze(self, maze_info["maze"], maze_info["height"], self.__CELL_HEIGHT, self.__gui_handler.get_maze_screen_pos(), maze_info["finish"]) 
+        self.__collectibles_coords = maze_info["collectibles"]
+        self.__maze = Maze(self, maze_info["maze"], maze_info["height"], self.__CELL_HEIGHT, self.__gui_handler.get_maze_screen_pos(), maze_info["finish"], self.__collectibles_coords) 
         self.__player = Player(self, 1, maze_info["player"], self.__CELL_HEIGHT)
         self.__enemies = [Enemy(self, 1, pos, self.__CELL_HEIGHT) for pos in maze_info["enemies"]] #instantiates all needed Enemy objects and stores them in a list.
         self.__MAZE_CELL_HEIGHT = maze_info["height"]
@@ -56,6 +61,12 @@ class LevelHandler:
 
         self.__route_adj_mat = [[None for cell in range(maze_info["height"]**2)] for row in range(maze_info["height"]**2)] #creates empty adjacency matrix - 2D array. Number of rows/columns is total number of cells in maze.
         #adjacency matrix will be updated with shortest routes between cells as they are calculated by the A* algorithm.
+
+    def load_maze(self):
+        with open(f"level_{self.__level_id}.json", "r") as f:
+            maze_data = json.load(f)
+        
+        return maze_data
 
     #level_loop method contains the loop that repeats for the whole level. Once this ends, the program returns to GameHandler's main game loop.
     def level_loop(self) -> tuple:
@@ -104,6 +115,9 @@ class LevelHandler:
             self.__gui_handler.draw_ui()
 
             pygame.display.update() #updates the window with any changes.
+        
+        self.__check_on_collectible()
+        print(f"{self.__collectibles_collected}/3")
 
     #manages all of the tasks that need to be won 
     def __enemy_move(self):
@@ -226,6 +240,13 @@ class LevelHandler:
         finish_coord = self.__maze.get_finish_coord()
         return player_pos == finish_coord
 
+    def __check_on_collectible(self) -> None:
+        player_pos, _ = self.get_entity_positions()
+        if player_pos in self.__collectibles_coords:
+            self.__maze.remove_collectible(player_pos)
+            self.__collectibles_coords.remove(player_pos)
+            self.__collectibles_collected += 1
+
     #__game_over() - will display game over method, sets __exit_level to false so that level loop ends, and will give user option to replay the same level.
     def __game_over(self) -> bool:
         self.__endgame_gui["txt_endgame_title"].set_text("Game Over!")
@@ -341,7 +362,7 @@ class LevelHandler:
     #get_entity_positions() - returns a tuple representing the current maze coord of the player and a list of tuple coordinates representing the current maze coords of the enemies.
     def get_entity_positions(self) -> tuple|list:
         player_pos = self.__player.get_maze_pos()
-        enemy_poses = [enemy.get_maze_pos() for enemy in self.__enemies]
+        enemy_poses = [tuple(enemy.get_maze_pos()) for enemy in self.__enemies]
         return player_pos, enemy_poses
     
     #get_maze() - returns level handler's maze object
