@@ -28,9 +28,8 @@ class Enemy(Entity):
             visiting_cell = cells[visiting_cell_coord[1]][visiting_cell_coord[0]]
 
             visiting_cell.update_estimate(0, 10000) #10000 as lower than infinity (so updates cell distance values) but large enough to never be smaller than an actual calculated value.
-            count = 0
+            
             while visiting_cell_coord != target_cell:
-                count += 1
                 visited.append(visiting_cell_coord)
                 
                 walls = visiting_cell.get_walls()

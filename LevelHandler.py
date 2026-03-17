@@ -44,8 +44,8 @@ class LevelHandler:
         maze_info = self.load_maze()
 
         self.__CELL_HEIGHT = self.__gui_handler.get_maze_screen_height()//maze_info["height"] #calculates cell height in pixels by dividing the height of the maze in pixels by number of cells in a column.
-        self.__collectibles_coords = maze_info["collectibles"]
-        self.__maze = Maze(self, maze_info["maze"], maze_info["height"], self.__CELL_HEIGHT, self.__gui_handler.get_maze_screen_pos(), maze_info["finish"], self.__collectibles_coords) 
+        self.__collectibles_coords = list(tuple(coord) for coord in maze_info["collectibles"])
+        self.__maze = Maze(self, maze_info["maze"], maze_info["height"], self.__CELL_HEIGHT, self.__gui_handler.get_maze_screen_pos(), tuple(maze_info["finish"]), tuple(self.__collectibles_coords)) 
         self.__player = Player(self, 1, maze_info["player"], self.__CELL_HEIGHT)
         self.__enemies = [Enemy(self, 1, pos, self.__CELL_HEIGHT) for pos in maze_info["enemies"]] #instantiates all needed Enemy objects and stores them in a list.
         self.__MAZE_CELL_HEIGHT = maze_info["height"]
@@ -238,10 +238,11 @@ class LevelHandler:
     def __check_game_win(self) -> bool:
         player_pos, _ = self.get_entity_positions()
         finish_coord = self.__maze.get_finish_coord()
-        return player_pos == finish_coord
+        return list(player_pos) == finish_coord
 
     def __check_on_collectible(self) -> None:
         player_pos, _ = self.get_entity_positions()
+
         if player_pos in self.__collectibles_coords:
             self.__maze.remove_collectible(player_pos)
             self.__collectibles_coords.remove(player_pos)
