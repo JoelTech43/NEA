@@ -1,6 +1,7 @@
 from Maze import Maze
 from Enemy import Enemy
 from Player import Player
+from Timer import Timer
 import pygame
 import pygame_gui
 import json
@@ -19,29 +20,7 @@ class LevelHandler:
         self.__settings_menu_gui = self.__gui_handler.get_settings_menu_panel()
         self.__endgame_gui = self.__gui_handler.get_endgame_panel()
 
-        #would load maze info from file here, just using test data for now.
-        # maze_info = {
-        #     "height": 10,
-        #     "width": 10,
-        #     "player": (4, 0),
-        #     "finish": (5, 9),
-        #     "enemies": [],#(7, 8),(4, 5),(2, 3),(7, 3)],
-        #     "collectibles": [(3, 4), (5, 8), (1, 4)],
-        #     "maze": [
-        #         [[True, True, False, False],[False, True, False, False],[False, True, False, True],[False, True, True, True],[True, True, False, False],[False, True, False, True],[False, True, False, True],[False, True, True, False],[True, True, False, True],[False, True, True, False]],
-        #         [[True, False, True, False],[True, False, False, True],[False, True, False, True],[False, True, True, False],[True, False, False, True],[False, True, True, False],[True, True, False, False],[False, False, True, True],[True, True, False, False],[False, False, True, False]],
-        #         [[True, False, False, True],[False, True, False, False],[False, True, True, False],[True, False, True, False],[True, True, False, False],[False, False, True, True],[True, False, False, True],[False, True, False, True],[False, False, True, True],[True, False, True, False]],
-        #         [[True, True, False, False],[False, False, True, True],[True, False, True, True],[True, False, False, True],[False, False, True, True],[True, True, False, False],[False, True, False, True],[False, True, False, True],[False, True, True, True],[True, False, True, False]],
-        #         [[True, False, False, True],[False, True, False, False],[False, True, True, False],[True, True, False, False],[False, True, True, False],[True, False, False, True],[False, True, False, False],[False, True, False, True],[False, True, False, True],[False, False, True, True]],
-        #         [[True, True, False, False],[False, False, True, True],[True, False, False, True],[False, False, True, True],[True, False, True, False],[True, True, False, False],[False, False, True, True],[True, True, False, True],[False, True, False, True],[False, True, True, False]],
-        #         [[True, False, True, False],[True, True, False, True],[False, True, False, True],[False, True, False, True],[False, False, True, True],[True, False, False, True],[False, True, False, True],[False, True, False, True],[False, True, True, False],[True, False, True, False]],
-        #         [[True, False, True, False],[True, True, False, False],[False, True, False, True],[False, True, True, False],[True, True, False, False],[False, True, True, False],[True, True, True, False],[True, True, False, False],[False, False, False, True],[False, False, True, True]],
-        #         [[True, False, True, False],[True, False, True, False],[True, True, False, False],[False, False, True, True],[True, False, True, False],[True, False, True, False],[True, False, True, False],[True, False, False, False],[False, True, True, False],[True, True, True, False]],
-        #         [[True, False, False, True],[False, False, True, True],[True, False, False, True],[False, True, False, True],[False, False, True, True],[True, False, True, True],[True, False, False, True],[False, False, True, True],[True, False, False, True],[False, False, True, True]]
-        #         ]
-        # }
-
-        maze_info = self.load_maze()
+        maze_info = self.__load_maze()
 
         self.__CELL_HEIGHT = self.__gui_handler.get_maze_screen_height()//maze_info["height"] #calculates cell height in pixels by dividing the height of the maze in pixels by number of cells in a column.
         self.__collectibles_coords = list(tuple(coord) for coord in maze_info["collectibles"])
@@ -50,7 +29,8 @@ class LevelHandler:
         self.__enemies = [Enemy(self, 1, pos, self.__CELL_HEIGHT) for pos in maze_info["enemies"]] #instantiates all needed Enemy objects and stores them in a list.
         self.__MAZE_CELL_HEIGHT = maze_info["height"]
         
-        #instantiate timer object
+        self.__level_timed = maze_info["time"] > 0
+        self.__level_timer = Timer(self, maze_info["time"], self.__level_timed)
 
         self.__exit_level = False #level_loop runs until this is True
         self.__paused = False
@@ -62,7 +42,7 @@ class LevelHandler:
         self.__route_adj_mat = [[None for cell in range(maze_info["height"]**2)] for row in range(maze_info["height"]**2)] #creates empty adjacency matrix - 2D array. Number of rows/columns is total number of cells in maze.
         #adjacency matrix will be updated with shortest routes between cells as they are calculated by the A* algorithm.
 
-    def load_maze(self):
+    def __load_maze(self):
         with open(f"level_{self.__level_id}.json", "r") as f:
             maze_data = json.load(f)
         
@@ -70,6 +50,7 @@ class LevelHandler:
 
     #level_loop method contains the loop that repeats for the whole level. Once this ends, the program returns to GameHandler's main game loop.
     def level_loop(self) -> tuple:
+        self.__update_gui_text()
         self.__level_gui["panel"].show()
         while self.__exit_level == False:
             self.__user_move() #let user move
@@ -102,11 +83,16 @@ class LevelHandler:
                 
                 if event.type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.__level_gui["btn_pause"]:
-                        self.pause()
+                        self.__pause()
                 
                 self.__gui_handler.process_events(event)
             
             self.__gui_handler.update(1/60)
+
+            if self.__level_timed == True:
+                if self.__level_timer.check_finished() == True:
+                    user_turn = False
+                self.__update_gui_text()
 
             self.__canvas.fill((0,0,0)) #clear the screen
             self.__maze.draw_maze() #redraw the maze
@@ -117,7 +103,6 @@ class LevelHandler:
             pygame.display.update() #updates the window with any changes.
         
         self.__check_on_collectible()
-        print(f"{self.__collectibles_collected}/3")
 
     #manages all of the tasks that need to be won 
     def __enemy_move(self):
@@ -134,7 +119,7 @@ class LevelHandler:
         
                     if event.type == pygame_gui.UI_BUTTON_PRESSED:
                         if event.ui_element == self.__level_gui["btn_pause"]:
-                            self.pause()
+                            self.__pause()
                     
                     self.__gui_handler.process_events(event)
 
@@ -147,7 +132,8 @@ class LevelHandler:
         pygame.display.update() #updates the window with any changes.
 
     #pause method - draws pause screen etc.
-    def pause(self):
+    def __pause(self):
+        self.__level_timer.pause_timer()
         self.__level_gui["panel"].hide()
         self.__pause_menu_gui["panel"].show()
         self.__paused = True
@@ -165,7 +151,7 @@ class LevelHandler:
                         self.__paused = False
                     
                     elif event.ui_element == self.__pause_menu_gui["btn_pause_settings"]:
-                        self.settings_menu()
+                        self.__settings_menu()
                     
                     elif event.ui_element == self.__pause_menu_gui["btn_restart"]:
                         self.__exit_level = True
@@ -189,8 +175,9 @@ class LevelHandler:
         
         self.__pause_menu_gui["panel"].hide()
         self.__level_gui["panel"].show()
+        self.__level_timer.resume_timer()
 
-    def settings_menu(self):
+    def __settings_menu(self):
         self.__pause_menu_gui["panel"].hide()
         self.__settings_menu_gui["panel"].show()
 
@@ -238,7 +225,7 @@ class LevelHandler:
     def __check_game_win(self) -> bool:
         player_pos, _ = self.get_entity_positions()
         finish_coord = self.__maze.get_finish_coord()
-        return list(player_pos) == finish_coord
+        return player_pos == finish_coord
 
     def __check_on_collectible(self) -> None:
         player_pos, _ = self.get_entity_positions()
@@ -247,6 +234,7 @@ class LevelHandler:
             self.__maze.remove_collectible(player_pos)
             self.__collectibles_coords.remove(player_pos)
             self.__collectibles_collected += 1
+            self.__update_gui_text()
 
     #__game_over() - will display game over method, sets __exit_level to false so that level loop ends, and will give user option to replay the same level.
     def __game_over(self) -> bool:
@@ -378,3 +366,9 @@ class LevelHandler:
         self.__player.draw_entity()
         for enemy in self.__enemies:
             enemy.draw_entity()
+    
+    #__update_gui_text() - changes the pygame_gui labels to reflect the current time remaining and collectibles collected.
+    def __update_gui_text(self) -> None:
+        self.__level_gui["txt_collectibles_collected"].set_text(f"Collectibles Collected: {self.__collectibles_collected}/3")
+        mins, secs = self.__level_timer.get_minute_second_time_left()
+        self.__level_gui["txt_time_remaining"].set_text(f"Time Remaining: {mins}:{secs}")

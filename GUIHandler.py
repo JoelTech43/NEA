@@ -16,14 +16,14 @@ class GUIHandler:
 
         self.__main_menu_panel = pygame_gui.elements.UIPanel(relative_rect=pygame.Rect((0,0), self.__WINDOW_SIZE), starting_height=1, manager=self.__gui_manager)
         self.__txt_title = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((30,30), (500,50)), text="Joel's A-maze-ing Game", manager=self.__gui_manager, container=self.__main_menu_panel)
-        self.__txt_level = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((30,100), (5000,500)), text="Current Level: ___", manager=self.__gui_manager, container=self.__main_menu_panel)
-        self.__txt_stars = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((30,200), (5000,500)), text="Stars Collected: ___", manager=self.__gui_manager, container=self.__main_menu_panel)
+        self.__txt_level = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((300,100), (200,20)), text="Current Level: ___", manager=self.__gui_manager, container=self.__main_menu_panel)
+        self.__txt_stars = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((300,200), (200,20)), text="Collectibles Collected: ___", manager=self.__gui_manager, container=self.__main_menu_panel)
         self.__btn_play_level = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((100,100), (100,50)), text="Play", manager=self.__gui_manager, container=self.__main_menu_panel)
         self.__btn_settings = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((100,300), (100,50)), text="Settings", manager=self.__gui_manager, container=self.__main_menu_panel)
         self.__btn_quit = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((100,500), (100,50)), text="Quit Game", manager=self.__gui_manager, container=self.__main_menu_panel)
         
         self.__level_panel = pygame_gui.elements.UIPanel(relative_rect=pygame.Rect((0,0), self.__WINDOW_SIZE), starting_height=1, manager=self.__gui_manager)
-        self.__txt_collectibles_collected = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((5,60), (200,20)), text="Collectibles Collected: _/_", manager=self.__gui_manager, container=self.__level_panel)
+        self.__txt_collectibles_collected = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((5,60), (200,20)), text="Collectibles Collected: _/3", manager=self.__gui_manager, container=self.__level_panel)
         self.__txt_time_remaining = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((5,80), (200,20)), text="Time Remaining: __:__", manager=self.__gui_manager, container=self.__level_panel)
         self.__btn_pause = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((5,5), (50,50)), text="⏸", manager=self.__gui_manager, container=self.__level_panel)
 
