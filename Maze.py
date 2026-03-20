@@ -17,6 +17,8 @@ class Maze:
         self.__collectibles_coords = list(collectibles_coords)
         self.__cells = [] #will be a 2D list of Cell objects, each inner list is a row in the maze.
 
+        self.__settings_handler = parent.get_settings_handler()
+
         for row in range(self.__maze_height):
             new_row = [] #new list for each row
             for col in range(self.__maze_height):
@@ -34,12 +36,12 @@ class Maze:
         #draw finish square
         finish_cell_screen_x = self.__screen_pos[0]+(self.__cell_height*self.__finish_coord[0])+1 #define the position of the top left corner of the finish square on the screen.
         finish_cell_screen_y = self.__screen_pos[1]+(self.__cell_height*self.__finish_coord[1])+1
-        pygame.draw.rect(canvas, (0,0,255), (finish_cell_screen_x, finish_cell_screen_y, self.__cell_height-2, self.__cell_height-2))
+        pygame.draw.rect(canvas, self.__settings_handler.get_highlight_col(), (finish_cell_screen_x, finish_cell_screen_y, self.__cell_height-2, self.__cell_height-2))
 
         for coord in self.__collectibles_coords:
-            collectible_screen_x = self.__screen_pos[0]+(self.__cell_height*coord[0])+1
-            collectible_screen_y = self.__screen_pos[1]+(self.__cell_height*coord[1])+1
-            pygame.draw.rect(canvas, (255,255,0), (collectible_screen_x, collectible_screen_y, self.__cell_height-2, self.__cell_height-2))
+            collectible_screen_x = self.__screen_pos[0]+(self.__cell_height*coord[0])+self.__cell_height//2
+            collectible_screen_y = self.__screen_pos[1]+(self.__cell_height*coord[1])+self.__cell_height//2
+            pygame.draw.circle(canvas, self.__settings_handler.get_highlight_col(), (collectible_screen_x, collectible_screen_y), self.__cell_height//2)
     
     def remove_collectible(self, coord: tuple) -> None:
         if coord in self.__collectibles_coords:
@@ -75,3 +77,6 @@ class Maze:
         for row in self.__cells:
             for cell in row:
                 cell.reset_estimates()
+    
+    def get_settings_handler(self):
+        return self.__settings_handler

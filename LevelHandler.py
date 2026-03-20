@@ -20,6 +20,10 @@ class LevelHandler:
         self.__settings_menu_gui = self.__gui_handler.get_settings_menu_panel()
         self.__endgame_gui = self.__gui_handler.get_endgame_panel()
 
+        self.__music_handler = parent.get_music_handler()
+
+        self.__settings_handler = parent.get_settings_handler()
+
         maze_info = self.__load_maze()
 
         self.__CELL_HEIGHT = self.__gui_handler.get_maze_screen_height()//maze_info["height"] #calculates cell height in pixels by dividing the height of the maze in pixels by number of cells in a column.
@@ -53,10 +57,12 @@ class LevelHandler:
         self.__update_gui_text()
         self.__level_gui["panel"].show()
         while self.__exit_level == False:
+            self.__music_handler.play_action_music()
             self.__user_move() #let user move
             self.__enemy_move() #calculate enemy moves and move them
             self.__check_game_state() #check if player has won or lost and take relevant action
         self.__level_gui["panel"].hide()
+        self.__music_handler.play_menu_music()
         return self.__collectibles_collected, self.__level_success, self.__replay
 
     #runs when it is the user's turn.
@@ -70,19 +76,30 @@ class LevelHandler:
                     self.__exit_level = True
                 if event.type == pygame.KEYDOWN:
                     if event.key in (pygame.K_a, pygame.K_LEFT):
+                        self.__music_handler.play_sfx_click()
                         self.__player.enter_move((-1,0)) #Coordinate/vector for left.
                     elif event.key in (pygame.K_w, pygame.K_UP):
+                        self.__music_handler.play_sfx_click()
                         self.__player.enter_move((0,-1))
                     elif event.key in (pygame.K_d, pygame.K_RIGHT):
+                        self.__music_handler.play_sfx_click()
                         self.__player.enter_move((1,0))
                     elif event.key in (pygame.K_s, pygame.K_DOWN):
+                        self.__music_handler.play_sfx_click()
                         self.__player.enter_move((0,1))
                     elif event.key in (pygame.K_RETURN, pygame.K_SPACE):
                         if self.__player.move_player() == True: #__player.move_player() returns True if player has entered a valid direction and has been moved. If not, returns False and we keep checking for inputs.
+                            self.__music_handler.play_sfx_click()
                             user_turn = False #user has moved, so now enemies' moves.
+                        else:
+                            self.__music_handler.play_sfx_error()
+                    elif event.key == pygame.K_ESCAPE:
+                        self.__music_handler.play_sfx_click()
+                        self.__pause()
                 
                 if event.type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.__level_gui["btn_pause"]:
+                        self.__music_handler.play_sfx_click()
                         self.__pause()
                 
                 self.__gui_handler.process_events(event)
@@ -94,7 +111,7 @@ class LevelHandler:
                     user_turn = False
                 self.__update_gui_text()
 
-            self.__canvas.fill((0,0,0)) #clear the screen
+            self.__canvas.fill(self.__settings_handler.get_bg_col()) #clear the screen
             self.__maze.draw_maze() #redraw the maze
             self.__draw_entities() #draw enemies and player
 
@@ -112,20 +129,25 @@ class LevelHandler:
 
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT: #if user clicks screen's X button, set __exit_level to True to escape level loop. Run GameHandler's save_and_quit method, closing program.
+                        self.__music_handler.play_sfx_click()
                         self.__parent.save_and_quit()
                         self.__exit_level = True
+
                     if event.type == pygame.KEYDOWN:
-                        pass #will add pause functionality at later point
+                        if event.key == pygame.K_ESCAPE:
+                            self.__music_handler.play_sfx_click()
+                            self.__pause()
         
                     if event.type == pygame_gui.UI_BUTTON_PRESSED:
                         if event.ui_element == self.__level_gui["btn_pause"]:
+                            self.__music_handler.play_sfx_click()
                             self.__pause()
                     
                     self.__gui_handler.process_events(event)
 
         self.__gui_handler.update(1/60)
 
-        self.__canvas.fill((0,0,0)) #clear screen
+        self.__canvas.fill(self.__settings_handler.get_bg_col()) #clear screen
         self.__maze.draw_maze() #redraw the maze
         self.__draw_entities() #draw enemies and player
         self.__gui_handler.draw_ui()
@@ -138,22 +160,29 @@ class LevelHandler:
         self.__pause_menu_gui["panel"].show()
         self.__paused = True
         while self.__paused == True:
+            self.__music_handler.play_menu_music()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: #if user clicks screen's X button, set __exit_level to True to escape level loop. Run GameHandler's save_and_quit method, closing program.
+                    self.__music_handler.play_sfx_click()
                     self.__parent.save_and_quit()
                     self.__exit_level = True
                     self.__paused = False
                 if event.type == pygame.KEYDOWN:
-                    pass #will add pause functionality at later point
+                    if event.key == pygame.K_ESCAPE:
+                        self.__music_handler.play_sfx_click()
+                        self.__paused = False
 
                 if event.type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.__pause_menu_gui["btn_resume"]:
+                        self.__music_handler.play_sfx_click()
                         self.__paused = False
                     
                     elif event.ui_element == self.__pause_menu_gui["btn_pause_settings"]:
+                        self.__music_handler.play_sfx_click()
                         self.__settings_menu()
                     
                     elif event.ui_element == self.__pause_menu_gui["btn_restart"]:
+                        self.__music_handler.play_sfx_click()
                         self.__exit_level = True
                         self.__replay = True
                         self.__paused = False
@@ -161,6 +190,7 @@ class LevelHandler:
                         self.__level_gui["panel"].show()
                     
                     elif event.ui_element == self.__pause_menu_gui["btn_quit_level"]:
+                        self.__music_handler.play_sfx_click()
                         self.__paused = False
                         self.__exit_level = True
                 
@@ -168,13 +198,14 @@ class LevelHandler:
             
             self.__gui_handler.update(1/60)
 
-            self.__canvas.fill((0,0,0)) #clear screen
+            self.__canvas.fill(self.__settings_handler.get_bg_col()) #clear screen
             
             self.__gui_handler.draw_ui()
             pygame.display.update() #updates the window with any changes.
         
         self.__pause_menu_gui["panel"].hide()
         self.__level_gui["panel"].show()
+        self.__music_handler.play_action_music()
         self.__level_timer.resume_timer()
 
     def __settings_menu(self):
@@ -185,22 +216,42 @@ class LevelHandler:
         while settings_open == True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: #if user clicks screen's X button, set __exit_level to True to escape level loop. Run GameHandler's save_and_quit method, closing program.
+                    self.__music_handler.play_sfx_click()
                     self.__parent.save_and_quit()
                     self.__exit_level = True
                     self.__paused = False
                     settings_open = False
-                if event.type == pygame.KEYDOWN:
-                    pass #will add pause functionality at later point
-
-                if event.type == pygame_gui.UI_BUTTON_PRESSED:
-                    if event.ui_element == self.__settings_menu_gui["btn_exit_settings"]:
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        self.__music_handler.play_sfx_click()
                         settings_open = False
+
+                elif event.type == pygame_gui.UI_BUTTON_PRESSED:
+                    if event.ui_element == self.__settings_menu_gui["btn_exit_settings"]:
+                        self.__music_handler.play_sfx_click()
+                        settings_open = False
+                    
+                    elif event.ui_element == self.__settings_menu_gui["btn_light_theme"]:
+                        self.__settings_handler.set_light_theme()
+                        self.__gui_handler.reload_theme()
+                    
+                    elif event.ui_element == self.__settings_menu_gui["btn_light_hc_theme"]:
+                        self.__settings_handler.set_light_hc_theme()
+                        self.__gui_handler.reload_theme()
+                    
+                    elif event.ui_element == self.__settings_menu_gui["btn_dark_theme"]:
+                        self.__settings_handler.set_dark_theme()
+                        self.__gui_handler.reload_theme()
+                    
+                    elif event.ui_element == self.__settings_menu_gui["btn_dark_hc_theme"]:
+                        self.__settings_handler.set_dark_hc_theme()
+                        self.__gui_handler.reload_theme()
                 
                 self.__gui_handler.process_events(event)
             
             self.__gui_handler.update(1/60)
 
-            self.__canvas.fill((0,0,0)) #clear screen
+            self.__canvas.fill(self.__settings_handler.get_bg_col()) #clear screen
             
             self.__gui_handler.draw_ui()
             pygame.display.update() #updates the window with any changes.
@@ -234,10 +285,13 @@ class LevelHandler:
             self.__maze.remove_collectible(player_pos)
             self.__collectibles_coords.remove(player_pos)
             self.__collectibles_collected += 1
+            self.__music_handler.play_sfx_collectible()
             self.__update_gui_text()
 
     #__game_over() - will display game over method, sets __exit_level to false so that level loop ends, and will give user option to replay the same level.
     def __game_over(self) -> bool:
+        self.__music_handler.play_sfx_death()
+        self.__music_handler.stop_bg_music()
         self.__endgame_gui["txt_endgame_title"].set_text("Game Over!")
         self.__level_gui["panel"].hide()
         self.__endgame_gui["panel"].show()
@@ -247,6 +301,7 @@ class LevelHandler:
         while exit_screen == False:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: #if user clicks screen's X button, set __exit_level to True to escape level loop. Run GameHandler's save_and_quit method, closing program.
+                    self.__music_handler.play_sfx_click()
                     self.__parent.save_and_quit()
                     self.__exit_level = True
                     self.__paused = False
@@ -254,9 +309,11 @@ class LevelHandler:
 
                 if event.type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.__endgame_gui["btn_return"]:
+                        self.__music_handler.play_sfx_click()
                         exit_screen = True
                     
                     elif event.ui_element == self.__endgame_gui["btn_replay"]:
+                        self.__music_handler.play_sfx_click()
                         replay = True
                         exit_screen = True
                 
@@ -264,7 +321,7 @@ class LevelHandler:
             
             self.__gui_handler.update(1/60)
 
-            self.__canvas.fill((0,0,0)) #clear screen
+            self.__canvas.fill(self.__settings_handler.get_bg_col()) #clear screen
             
             self.__gui_handler.draw_ui()
             pygame.display.update() #updates the window with any changes.
@@ -275,6 +332,8 @@ class LevelHandler:
 
     #__game_win() - will display game won method, sets __exit_level to false so that level loop ends, and will give user option to replay the same level.
     def __game_win(self) -> bool:
+        self.__music_handler.play_sfx_success()
+        self.__music_handler.stop_bg_music()
         self.__endgame_gui["txt_endgame_title"].set_text("Level Complete!")
         self.__level_gui["panel"].hide()
         self.__endgame_gui["panel"].show()
@@ -284,6 +343,7 @@ class LevelHandler:
         while exit_screen == False:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: #if user clicks screen's X button, set __exit_level to True to escape level loop. Run GameHandler's save_and_quit method, closing program.
+                    self.__music_handler.play_sfx_click()
                     self.__parent.save_and_quit()
                     self.__exit_level = True
                     self.__paused = False
@@ -291,9 +351,11 @@ class LevelHandler:
 
                 if event.type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.__endgame_gui["btn_return"]:
+                        self.__music_handler.play_sfx_click()
                         exit_screen = True
                     
                     elif event.ui_element == self.__endgame_gui["btn_replay"]:
+                        self.__music_handler.play_sfx_click()
                         replay = True
                         exit_screen = True
                 
@@ -301,7 +363,7 @@ class LevelHandler:
             
             self.__gui_handler.update(1/60)
 
-            self.__canvas.fill((0,0,0)) #clear screen
+            self.__canvas.fill(self.__settings_handler.get_bg_col()) #clear screen
             
             self.__gui_handler.draw_ui()
             pygame.display.update() #updates the window with any changes.
@@ -372,3 +434,6 @@ class LevelHandler:
         self.__level_gui["txt_collectibles_collected"].set_text(f"Collectibles Collected: {self.__collectibles_collected}/3")
         mins, secs = self.__level_timer.get_minute_second_time_left()
         self.__level_gui["txt_time_remaining"].set_text(f"Time Remaining: {mins}:{secs}")
+    
+    def get_settings_handler(self):
+        return self.__settings_handler

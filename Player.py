@@ -10,7 +10,7 @@ class Player(Entity):
     def __init__(self, parent, move_distance: int, maze_pos: tuple, cell_height: int) -> None:
         super().__init__(parent, move_distance, maze_pos, cell_height) #calls Entity's __init__ to do most of the setup
         self.__suggested_move = (0,0)
-        self._col = (0,255,0)
+        self._col = self._settings_handler.get_player_col()
     
     #__validate_input() - takes direction player wants to move in and returns True if this is a valid move, and False if not.
     #move_dir is a tuple representing direction to move (-1,0) is left, (1,0) is right, (0,-1) is up, (0,1) is down.
@@ -42,7 +42,7 @@ class Player(Entity):
         maze_screen_pos = self._parent.get_maze().get_screen_pos()
         suggested_screen_x = maze_screen_pos[0]+(suggested_x*self._cell_height)+1
         suggested_screen_y = maze_screen_pos[1]+(suggested_y*self._cell_height)+1
-        #pygame.draw.rect(canvas, (255, 204, 0), (suggested_screen_x, suggested_screen_y, self._cell_height-2, self._cell_height-2))
+        
         surface = pygame.Surface((self._cell_height-2, self._cell_height-2), pygame.SRCALPHA)
         surface.fill((self._col[0], self._col[1], self._col[2], 120))
         canvas.blit(surface, (suggested_screen_x, suggested_screen_y))

@@ -3,7 +3,7 @@ import pygame_gui
 
 class GUIHandler:
     def __init__(self):
-        main_desktop_size = pygame.display.get_desktop_sizes()[1] #gets display sizes (px) as tuples (width, height). I use index 0 as this is the main monitor.
+        main_desktop_size = pygame.display.get_desktop_sizes()[0] #gets display sizes (px) as tuples (width, height). I use index 0 as this is the main monitor.
         self.__WINDOW_SIZE = (int(main_desktop_size[0]*0.8), int(main_desktop_size[1]*0.8)) #sets window size to 80% of screen size so that user can easily switch to other windows and close game, but large enough to see maze clearly.
         self.__MAZE_SCREEN_HEIGHT = min(int(self.__WINDOW_SIZE[0]*0.9), int(self.__WINDOW_SIZE[1]*0.95)) #maze height is either set to 90% of the window width, or 95% of window height. Means maze is as large as possible whilst leaving some around it.
         self.__MAZE_SCREEN_POS = ((self.__WINDOW_SIZE[0]-self.__MAZE_SCREEN_HEIGHT)//2, (self.__WINDOW_SIZE[1]-self.__MAZE_SCREEN_HEIGHT)//2) #start position in window (x,y) from top left. Centers maze by finding difference between window size and maze size and halving.
@@ -11,13 +11,13 @@ class GUIHandler:
         self.__canvas = pygame.display.set_mode(self.__WINDOW_SIZE) #creates the window, with the size we calculated earlier.
         pygame.display.set_caption("Joel's A-maze-ing Game") #sets window title
 
-        self.__gui_manager = pygame_gui.UIManager(self.__WINDOW_SIZE, "test_theme.json")
+        self.__gui_manager = pygame_gui.UIManager(self.__WINDOW_SIZE, "theme.json")
         #pygame.time.Clock() not needed as simple game so can just assume 1/60 for time_deltas.
 
         self.__main_menu_panel = pygame_gui.elements.UIPanel(relative_rect=pygame.Rect((0,0), self.__WINDOW_SIZE), starting_height=1, manager=self.__gui_manager)
         self.__txt_title = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((30,30), (500,50)), text="Joel's A-maze-ing Game", manager=self.__gui_manager, container=self.__main_menu_panel)
         self.__txt_level = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((300,100), (200,20)), text="Current Level: ___", manager=self.__gui_manager, container=self.__main_menu_panel)
-        self.__txt_stars = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((300,200), (200,20)), text="Collectibles Collected: ___", manager=self.__gui_manager, container=self.__main_menu_panel)
+        self.__txt_collectibles = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((300,200), (200,20)), text="Collectibles Collected: ___", manager=self.__gui_manager, container=self.__main_menu_panel)
         self.__btn_play_level = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((100,100), (100,50)), text="Play", manager=self.__gui_manager, container=self.__main_menu_panel)
         self.__btn_settings = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((100,300), (100,50)), text="Settings", manager=self.__gui_manager, container=self.__main_menu_panel)
         self.__btn_quit = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((100,500), (100,50)), text="Quit Game", manager=self.__gui_manager, container=self.__main_menu_panel)
@@ -74,7 +74,7 @@ class GUIHandler:
         self.__endgame_panel.hide()
     
     def get_main_menu_panel(self) -> dict:
-        return {"panel": self.__main_menu_panel, "txt_title": self.__txt_title, "txt_level": self.__txt_level, "txt_stars": self.__txt_stars, "btn_play_level": self.__btn_play_level, "btn_settings": self.__btn_settings, "btn_quit": self.__btn_quit}
+        return {"panel": self.__main_menu_panel, "txt_title": self.__txt_title, "txt_level": self.__txt_level, "txt_collectibles": self.__txt_collectibles, "btn_play_level": self.__btn_play_level, "btn_settings": self.__btn_settings, "btn_quit": self.__btn_quit}
     
     def get_level_panel(self) -> dict:
         return {"panel": self.__level_panel, "txt_collectibles_collected": self.__txt_collectibles_collected, "txt_time_remaining": self.__txt_time_remaining, "btn_pause": self.__btn_pause}
@@ -108,3 +108,9 @@ class GUIHandler:
     
     def get_maze_screen_pos(self) -> tuple:
         return self.__MAZE_SCREEN_POS
+
+    def reload_theme(self):
+        self.__gui_manager.get_theme().load_theme("theme.json")
+        for element in self.__gui_manager.get_sprite_group().sprites():
+            if hasattr(element, "rebuild"):
+                element.rebuild()

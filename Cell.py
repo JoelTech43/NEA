@@ -18,6 +18,8 @@ class Cell:
         self.__heuristic_estimate = float("inf")
         self.__overall_dist_estimate = float("inf")
         self.__prev_cell = None #another attribute for pathfinding - prev_cell will be set in algorithm.
+
+        self.__settings_handler = self.__parent.get_settings_handler()
     
     #update_estimate() - calculates what the new distance estimates of the cell should be.
     #start_dist is an integer representing the length of the shortest route from the start to this cell.
@@ -68,10 +70,10 @@ class Cell:
     #draw_cell() - draws cell walls based on __walls tuple.
     def draw_cell(self, canvas):
         if self.__walls[0] == True: #draw left wall
-            pygame.draw.rect(canvas, (255,255,255), (self.__screen_pos[0], self.__screen_pos[1], self.__border_width, self.__cell_height))
+            pygame.draw.rect(canvas, self.__settings_handler.get_wall_col(), (self.__screen_pos[0], self.__screen_pos[1], self.__border_width, self.__cell_height))
         if self.__walls[1] == True: #draw top wall
-            pygame.draw.rect(canvas, (255,255,255), (self.__screen_pos[0], self.__screen_pos[1], self.__cell_height, self.__border_width))
+            pygame.draw.rect(canvas, self.__settings_handler.get_wall_col(), (self.__screen_pos[0], self.__screen_pos[1], self.__cell_height, self.__border_width))
         if self.__walls[2] == True: #draw right wall
-            pygame.draw.rect(canvas, (255,255,255), (self.__screen_pos[0]+self.__cell_height-1, self.__screen_pos[1], self.__border_width, self.__cell_height))
+            pygame.draw.rect(canvas, self.__settings_handler.get_wall_col(), (self.__screen_pos[0]+self.__cell_height-1, self.__screen_pos[1], self.__border_width, self.__cell_height))
         if self.__walls[3] == True: #draw bottom wall
-            pygame.draw.rect(canvas, (255,255,255), (self.__screen_pos[0], self.__screen_pos[1]+self.__cell_height-1, self.__cell_height, self.__border_width))
+            pygame.draw.rect(canvas, self.__settings_handler.get_wall_col(), (self.__screen_pos[0], self.__screen_pos[1]+self.__cell_height-1, self.__cell_height, self.__border_width))

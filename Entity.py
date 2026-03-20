@@ -12,7 +12,9 @@ class Entity:
         self._move_distance = move_distance
         self._maze_pos = tuple(maze_pos)
         self._cell_height = cell_height
-        self._col = (0,0,255)
+
+        self._settings_handler = self._parent.get_settings_handler()
+        self._col = (0,0,0)
     
     #draw_entity() - draws Entity on screen.
     def draw_entity(self) -> None:

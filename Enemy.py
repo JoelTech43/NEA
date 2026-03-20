@@ -9,7 +9,7 @@ class Enemy(Entity):
     #cell_height is the height/width of the cell in px.
     def __init__(self, parent, move_distance: int, maze_pos: tuple, cell_height: int) -> None:
         super().__init__(parent, move_distance, maze_pos, cell_height) #calls Entity's __init__ to do most of the setup
-        self._col = (255,0,0)
+        self._col = self._settings_handler.get_enemy_col()
 
     #__find_shortest_route() - finds shortest route between Enemy's current position and the target cell.
     #target_cell is a tuple (x,y) representing the coord in the maze that the enemy wants to move towards.
