@@ -1,6 +1,6 @@
 {
-    "bg_vol": 52,
-    "sfx_vol": 100,
+    "bg_vol": 58,
+    "sfx_vol": 28,
     "bg_col": [
         97,
         97,
@@ -31,5 +31,5 @@
         0,
         0
     ],
-    "selected_item": "player_col"
+    "selected_item": "enemy_col"
 }

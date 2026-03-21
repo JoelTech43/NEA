@@ -13,7 +13,7 @@
     },
     "#colour_rect": {
         "colours": {
-            "dark_bg": "#02ba0d"
+            "dark_bg": "#ff0000"
         }
     },
     "label": {
