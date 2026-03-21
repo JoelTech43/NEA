@@ -2,17 +2,39 @@ import pygame
 import pygame_gui
 
 class GUIHandler:
-    def __init__(self):
+    def __init__(self, parent):
+        self.__parent = parent
+
         main_desktop_size = pygame.display.get_desktop_sizes()[0] #gets display sizes (px) as tuples (width, height). I use index 0 as this is the main monitor.
         self.__WINDOW_SIZE = (int(main_desktop_size[0]*0.8), int(main_desktop_size[1]*0.8)) #sets window size to 80% of screen size so that user can easily switch to other windows and close game, but large enough to see maze clearly.
         self.__MAZE_SCREEN_HEIGHT = min(int(self.__WINDOW_SIZE[0]*0.9), int(self.__WINDOW_SIZE[1]*0.95)) #maze height is either set to 90% of the window width, or 95% of window height. Means maze is as large as possible whilst leaving some around it.
         self.__MAZE_SCREEN_POS = ((self.__WINDOW_SIZE[0]-self.__MAZE_SCREEN_HEIGHT)//2, (self.__WINDOW_SIZE[1]-self.__MAZE_SCREEN_HEIGHT)//2) #start position in window (x,y) from top left. Centers maze by finding difference between window size and maze size and halving.
+        
+        self.__settings_handler = self.__parent.get_settings_handler()
 
         self.__canvas = pygame.display.set_mode(self.__WINDOW_SIZE) #creates the window, with the size we calculated earlier.
         pygame.display.set_caption("Joel's A-maze-ing Game") #sets window title
 
-        self.__gui_manager = pygame_gui.UIManager(self.__WINDOW_SIZE, "theme.json")
+        self.__build_ui("bg_col")
         #pygame.time.Clock() not needed as simple game so can just assume 1/60 for time_deltas.
+
+    def __build_ui(self, current_screen="main_menu"):
+        settings = self.__settings_handler.get_settings()
+        match settings["selected_item"]:
+            case "bg_col":
+                starting_selection = "Background"
+            case "wall_col":
+                starting_selection = "Text/Walls"
+            case "btn_col":
+                starting_selection = "Buttons"
+            case "highlight_col":
+                starting_selection = "Highlights"
+            case "player_col":
+                starting_selection = "Player"
+            case "enemy_col":
+                starting_selection = "Enemy"
+
+        self.__gui_manager = pygame_gui.UIManager(self.__WINDOW_SIZE, "theme.json")
 
         self.__main_menu_panel = pygame_gui.elements.UIPanel(relative_rect=pygame.Rect((0,0), self.__WINDOW_SIZE), starting_height=1, manager=self.__gui_manager)
         self.__txt_title = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((30,30), (500,50)), text="Joel's A-maze-ing Game", manager=self.__gui_manager, container=self.__main_menu_panel)
@@ -31,30 +53,31 @@ class GUIHandler:
         self.__txt_pause_title = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((5,5), (150,20)), text="Game Paused", manager=self.__gui_manager, container=self.__pause_menu_panel)
         self.__txt_pause_volume_subtitle = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((5,25), (150,20)), text="Volume Settings:", manager=self.__gui_manager, container=self.__pause_menu_panel)
         self.__txt_pause_bg_volume = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((5,45), (200,20)), text="Background Volume: __%", manager=self.__gui_manager, container=self.__pause_menu_panel)
-        self.__slider_pause_bg_volume = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((5,65), (1000,50)), start_value=50, value_range=(0,100), manager=self.__gui_manager, container=self.__pause_menu_panel)
+        self.__slider_pause_bg_volume = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((5,65), (1000,50)), start_value=settings["bg_vol"], value_range=(0,100), manager=self.__gui_manager, container=self.__pause_menu_panel)
         self.__txt_pause_sfx_volume = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((5,115), (200,20)), text="Sound Effects Volume: __%", manager=self.__gui_manager, container=self.__pause_menu_panel)
-        self.__slider_pause_sfx_volume = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((5,135), (1000,50)), start_value=50, value_range=(0,100), manager=self.__gui_manager, container=self.__pause_menu_panel)
+        self.__slider_pause_sfx_volume = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((5,135), (1000,50)), start_value=settings["sfx_vol"], value_range=(0,100), manager=self.__gui_manager, container=self.__pause_menu_panel)
         self.__btn_resume = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((5,185), (100,50)), text="Resume", manager=self.__gui_manager, container=self.__pause_menu_panel)
         self.__btn_pause_settings = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((110, 185), (100,50)), text="Settings", manager=self.__gui_manager, container=self.__pause_menu_panel)
         self.__btn_restart = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((215,185), (100,50)), text="Restart Level", manager=self.__gui_manager, container=self.__pause_menu_panel)
         self.__btn_quit_level = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((320,185), (100,50)), text="Quit Level", manager=self.__gui_manager, container=self.__pause_menu_panel)
 
+        r,g,b = settings[settings["selected_item"]]
         self.__settings_menu_panel = pygame_gui.elements.UIPanel(relative_rect=pygame.Rect((0,0), self.__WINDOW_SIZE), starting_height=1, manager=self.__gui_manager)
         self.__txt_settings_title = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((5,5), (150,20)), text="Settings", manager=self.__gui_manager, container=self.__settings_menu_panel)
         self.__txt_settings_volume_subtitle = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((5,25), (150,20)), text="Volume Settings:", manager=self.__gui_manager, container=self.__settings_menu_panel)
         self.__txt_settings_bg_volume = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((5,45), (200,20)), text="Background Volume: __%", manager=self.__gui_manager, container=self.__settings_menu_panel)
-        self.__slider_settings_bg_volume = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((5,65), (500,50)), start_value=50, value_range=(0,100), manager=self.__gui_manager, container=self.__settings_menu_panel)
+        self.__slider_settings_bg_volume = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((5,65), (500,50)), start_value=settings["bg_vol"], value_range=(0,100), manager=self.__gui_manager, container=self.__settings_menu_panel)
         self.__txt_settings_sfx_volume = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((5,115), (200,20)), text="Sound Effects Volume: __%", manager=self.__gui_manager, container=self.__settings_menu_panel)
-        self.__slider_settings_sfx_volume = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((5,135), (500,50)), start_value=50, value_range=(0,100), manager=self.__gui_manager, container=self.__settings_menu_panel)
+        self.__slider_settings_sfx_volume = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((5,135), (500,50)), start_value=settings["sfx_vol"], value_range=(0,100), manager=self.__gui_manager, container=self.__settings_menu_panel)
         self.__txt_theme_subtitle = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((550,25), (150,20)), text="Theme Settings:", manager=self.__gui_manager, container=self.__settings_menu_panel)
-        self.__drop_theme_section = pygame_gui.elements.UIDropDownMenu(options_list=["Background", "Text/Walls", "Buttons", "Highlights", "Player", "Enemy"], starting_option="Background", relative_rect=pygame.Rect((550,45),(200,50)), manager=self.__gui_manager, container=self.__settings_menu_panel)
+        self.__drop_theme_section = pygame_gui.elements.UIDropDownMenu(options_list=["Background", "Text/Walls", "Buttons", "Highlights", "Player", "Enemy"], starting_option=starting_selection, relative_rect=pygame.Rect((550,45),(200,50)), manager=self.__gui_manager, container=self.__settings_menu_panel)
         self.__colour_rect = pygame_gui.elements.UIPanel(relative_rect=pygame.Rect((550,95), (200,50)), manager=self.__gui_manager, container=self.__settings_menu_panel, object_id="#colour_rect")
         self.__txt_red_level = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((750,45), (100,20)), text="Red: __%", manager=self.__gui_manager, container=self.__settings_menu_panel)
-        self.__slider_red_level = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((750,65), (500,50)), start_value=50, value_range=(0,100), manager=self.__gui_manager, container=self.__settings_menu_panel)
+        self.__slider_red_level = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((750,65), (500,50)), start_value=int((r/255)*100), value_range=(0,100), manager=self.__gui_manager, container=self.__settings_menu_panel)
         self.__txt_green_level = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((750,115), (150,20)), text="Green: __%", manager=self.__gui_manager, container=self.__settings_menu_panel)
-        self.__slider_green_level = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((750,135), (500,50)), start_value=50, value_range=(0,100), manager=self.__gui_manager, container=self.__settings_menu_panel)
+        self.__slider_green_level = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((750,135), (500,50)), start_value=int((g/255)*100), value_range=(0,100), manager=self.__gui_manager, container=self.__settings_menu_panel)
         self.__txt_blue_level = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((750,185), (150,20)), text="Blue: __%", manager=self.__gui_manager, container=self.__settings_menu_panel)
-        self.__slider_blue_level = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((750,205), (500,50)), start_value=50, value_range=(0,100), manager=self.__gui_manager, container=self.__settings_menu_panel)
+        self.__slider_blue_level = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((750,205), (500,50)), start_value=int((b/255)*100), value_range=(0,100), manager=self.__gui_manager, container=self.__settings_menu_panel)
         self.__txt_preset_themes = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((550,255), (150,20)), text="Preset Themes:", manager=self.__gui_manager, container=self.__settings_menu_panel)
         self.__btn_light_theme = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((550,275), (100,50)), text="Light", manager=self.__gui_manager, container=self.__settings_menu_panel)
         self.__btn_dark_theme = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((650,275), (100,50)), text="Dark", manager=self.__gui_manager, container=self.__settings_menu_panel)
@@ -67,12 +90,42 @@ class GUIHandler:
         self.__btn_replay = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((5,50), (100,50)), text="Replay Level", manager=self.__gui_manager, container=self.__endgame_panel)
         self.__btn_return = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((110,50), (100,50)), text="Return to\nMain Menu", manager=self.__gui_manager, container=self.__endgame_panel)
 
-        self.__main_menu_panel.show()
-        self.__level_panel.hide()
-        self.__pause_menu_panel.hide()
-        self.__settings_menu_panel.hide()
-        self.__endgame_panel.hide()
-    
+        match current_screen:
+            case "level":
+                self.__main_menu_panel.hide()
+                self.__level_panel.show()
+                self.__pause_menu_panel.hide()
+                self.__settings_menu_panel.hide()
+                self.__endgame_panel.hide()
+            
+            case "pause_menu":
+                self.__main_menu_panel.hide()
+                self.__level_panel.hide()
+                self.__pause_menu_panel.show()
+                self.__settings_menu_panel.hide()
+                self.__endgame_panel.hide()
+
+            case "settings_menu":
+                self.__main_menu_panel.hide()
+                self.__level_panel.hide()
+                self.__pause_menu_panel.hide()
+                self.__settings_menu_panel.show()
+                self.__endgame_panel.hide()
+
+            case "endgame":
+                self.__main_menu_panel.hide()
+                self.__level_panel.hide()
+                self.__pause_menu_panel.hide()
+                self.__settings_menu_panel.hide()
+                self.__endgame_panel.show()
+
+            case _:
+                self.__main_menu_panel.show()
+                self.__level_panel.hide()
+                self.__pause_menu_panel.hide()
+                self.__settings_menu_panel.hide()
+                self.__endgame_panel.hide()
+
     def get_main_menu_panel(self) -> dict:
         return {"panel": self.__main_menu_panel, "txt_title": self.__txt_title, "txt_level": self.__txt_level, "txt_collectibles": self.__txt_collectibles, "btn_play_level": self.__btn_play_level, "btn_settings": self.__btn_settings, "btn_quit": self.__btn_quit}
     
@@ -80,7 +133,7 @@ class GUIHandler:
         return {"panel": self.__level_panel, "txt_collectibles_collected": self.__txt_collectibles_collected, "txt_time_remaining": self.__txt_time_remaining, "btn_pause": self.__btn_pause}
     
     def get_pause_menu_panel(self):
-        return {"panel": self.__pause_menu_panel, "txt_pause_title": self.__txt_pause_title, "txt_pause_volume_subtitle": self.__txt_pause_volume_subtitle, "txt_bg_volume": self.__txt_pause_bg_volume, "slider_bg_volume": self.__slider_pause_bg_volume, "txt_sfx_volume": self.__txt_pause_sfx_volume, "slider_sfx_volume": self.__slider_pause_sfx_volume, "btn_resume": self.__btn_resume, "btn_pause_settings": self.__btn_pause_settings, "btn_restart": self.__btn_restart, "btn_quit_level": self.__btn_quit_level}
+        return {"panel": self.__pause_menu_panel, "txt_pause_title": self.__txt_pause_title, "txt_pause_volume_subtitle": self.__txt_pause_volume_subtitle, "txt_pause_bg_volume": self.__txt_pause_bg_volume, "slider_pause_bg_volume": self.__slider_pause_bg_volume, "txt_pause_sfx_volume": self.__txt_pause_sfx_volume, "slider_pause_sfx_volume": self.__slider_pause_sfx_volume, "btn_resume": self.__btn_resume, "btn_pause_settings": self.__btn_pause_settings, "btn_restart": self.__btn_restart, "btn_quit_level": self.__btn_quit_level}
 
     def get_settings_menu_panel(self):
         return {"panel": self.__settings_menu_panel, "txt_settings_title": self.__txt_settings_title, "txt_settings_volume_subtitle": self.__txt_settings_volume_subtitle, "txt_settings_bg_volume": self.__txt_settings_bg_volume, "slider_settings_bg_volume": self.__slider_settings_bg_volume, "txt_settings_sfx_volume": self.__txt_settings_sfx_volume, "slider_settings_sfx_volume": self.__slider_settings_sfx_volume, "txt_theme_subtitle": self.__txt_theme_subtitle, "drop_theme_section": self.__drop_theme_section, "colour_rect": self.__colour_rect, "txt_red_level": self.__txt_red_level, "slider_red_level": self.__slider_red_level, "txt_green_level": self.__txt_green_level, "slider_green_level": self.__slider_green_level, "txt_blue_level": self.__txt_blue_level, "slider_blue_level": self.__slider_blue_level, "txt_preset_themes": self.__txt_preset_themes, "btn_light_theme": self.__btn_light_theme, "btn_dark_theme": self.__btn_dark_theme, "btn_light_hc_theme": self.__btn_light_hc_theme, "btn_dark_hc_theme": self.__btn_dark_hc_theme, "btn_exit_settings": self.__btn_exit_settings}
@@ -109,8 +162,9 @@ class GUIHandler:
     def get_maze_screen_pos(self) -> tuple:
         return self.__MAZE_SCREEN_POS
 
-    def reload_theme(self):
-        self.__gui_manager.get_theme().load_theme("theme.json")
+    def reload_theme(self, current_screen="main_menu"):
         for element in self.__gui_manager.get_sprite_group().sprites():
-            if hasattr(element, "rebuild"):
-                element.rebuild()
+            if hasattr(element, "kill"):
+                element.kill()
+        
+        self.__build_ui(current_screen)

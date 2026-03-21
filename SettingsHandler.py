@@ -3,6 +3,7 @@ import json
 class SettingsHandler:
     def __init__(self):
         self.__settings = self.__load_settings()
+        self.__update_theme_file()
     
     def __load_settings(self) -> dict:
         try:
@@ -18,20 +19,21 @@ class SettingsHandler:
                 "btn_col": (156, 150, 150),
                 "highlight_col": (0, 153, 255),
                 "player_col": (2, 186, 13),
-                "enemy_col": (255, 0, 0)
+                "enemy_col": (255, 0, 0),
+                "selected_item": "bg_col"
             }
         
         return settings
 
-    def __update_theme_file(self, selected_item="bg_col"):
+    def __update_theme_file(self):
         with open("theme.json", "r") as f:
             theme = json.load(f)
 
-        theme["#colour_rect"]["colours"]["dark_bg"] = self.__rgb_to_hex(self.__settings[selected_item])
+        theme["#colour_rect"]["colours"]["dark_bg"] = self.__rgb_to_hex(self.__settings[self.__settings["selected_item"]])
         
         theme["label"]["colours"]["normal_text"] = self.__rgb_to_hex(self.__settings["wall_col"])
         theme["button"]["colours"]["normal_bg"] = self.__rgb_to_hex(self.__settings["btn_col"])
-        theme["button"]["colours"]["normal_txt"] = self.__rgb_to_hex(self.__settings["wall_col"])
+        theme["button"]["colours"]["normal_text"] = self.__rgb_to_hex(self.__settings["wall_col"])
         theme["horizontal_slider"]["colours"]["dark_bg"] = self.__rgb_to_hex(self.__settings["btn_col"])
         theme["horizontal_slider.#left_button"]["colours"]["normal_bg"] = self.__rgb_to_hex(self.__settings["btn_col"])
         theme["horizontal_slider.#left_button"]["colours"]["normal_text"] = self.__rgb_to_hex(self.__settings["wall_col"])
@@ -41,7 +43,10 @@ class SettingsHandler:
         theme["horizontal_slider.#sliding_button"]["colours"]["normal_text"] = self.__rgb_to_hex(self.__settings["wall_col"])
 
         with open("theme.json", "w") as f:
-            json.dump(theme, f)
+            json.dump(theme, f, indent=4)
+        
+        f = open("theme.json", "a")
+        f.close()
 
     def __rgb_to_hex(self, col):
         r,g,b = col
@@ -93,6 +98,12 @@ class SettingsHandler:
     def get_sfx_volume(self):
         return self.__settings["sfx_vol"]
     
+    def set_bg_volume(self, vol):
+        self.__settings["bg_vol"] = vol
+    
+    def set_sfx_volume(self, vol):
+        self.__settings["sfx_vol"] = vol
+    
     def get_bg_col(self):
         return self.__settings["bg_col"]
 
@@ -111,8 +122,16 @@ class SettingsHandler:
     def get_enemy_col(self):
         return self.__settings["enemy_col"]
     
-    def set_bg_volume(self, vol):
-        self.__settings["bg_vol"] = vol
+    def get_selected_item(self):
+        return self.__settings["selected_item"]
     
-    def set_sfx_volume(self, vol):
-        self.__settings["sfx_vol"] = vol
+    def get_settings(self):
+        return self.__settings.copy()
+    
+    def set_settings(self, settings):
+        self.__settings = settings
+        self.__update_theme_file()
+    
+    def save_settings(self):
+        with open("settings.json", "w") as f:
+            json.dump(self.__settings, f, indent=4)

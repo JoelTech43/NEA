@@ -13,42 +13,41 @@
     },
     "#colour_rect": {
         "colours": {
-            "dark_bg": "#000a8c"
+            "dark_bg": "#ff00ff"
         }
     },
     "label": {
         "colours": {
-            "normal_text": "#ffffff"
+            "normal_text": "#ff0000"
         }
     },
     "button": {
         "colours": {
-            "normal_bg": "#000a8c",
-            "normal_text": "#ffffff",
-            "normal_txt": "#000000"
+            "normal_bg": "#000000",
+            "normal_text": "#ff0000"
         }
     },
     "horizontal_slider": {
         "colours": {
-            "dark_bg": "#000a8c"
+            "dark_bg": "#000000"
         }
     },
     "horizontal_slider.#left_button": {
         "colours": {
-            "normal_bg": "#000a8c",
-            "normal_text": "#ffffff"
+            "normal_bg": "#000000",
+            "normal_text": "#ff0000"
         }
     },
     "horizontal_slider.#right_button": {
         "colours": {
-            "normal_bg": "#000a8c",
-            "normal_text": "#ffffff"
+            "normal_bg": "#000000",
+            "normal_text": "#ff0000"
         }
     },
     "horizontal_slider.#sliding_button": {
         "colours": {
-            "normal_bg": "#000a8c",
-            "normal_text": "#ffffff"
+            "normal_bg": "#000000",
+            "normal_text": "#ff0000"
         }
     }
 }

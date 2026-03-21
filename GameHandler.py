@@ -11,12 +11,12 @@ class GameHandler:
     def __init__(self):
         pygame.init() #initialises pygame. Necessary to use pygame functions.
 
-        self.__gui_handler = GUIHandler()
+        self.__settings_handler = SettingsHandler()
+        self.__gui_handler = GUIHandler(self)
         self.__canvas = self.__gui_handler.get_canvas()
         self.__main_menu_gui = self.__gui_handler.get_main_menu_panel()
         self.__settings_menu_gui = self.__gui_handler.get_settings_menu_panel()
         
-        self.__settings_handler = SettingsHandler()
 
         self.__music_handler = MusicHandler()
         self.__music_handler.set_background_volume(self.__settings_handler.get_bg_volume())
@@ -129,7 +129,7 @@ class GameHandler:
     def save_and_quit(self):
         with open("user_data.json", "w") as f:
             json.dump(self.__user_data, f)
-        
+        self.__settings_handler.save_settings()
         self.__running = False
     
     def get_gui_handler(self):
@@ -144,3 +144,7 @@ class GameHandler:
     def __update_gui_text(self):
         self.__main_menu_gui["txt_collectibles"].set_text(f"Collectibles Collected: {self.__user_data["total_collectibles"]}")
         self.__main_menu_gui["txt_level"].set_text(f"Current Level: {self.__user_data["current_level"]}")
+    
+    def reload_theme(self):
+        self.__main_menu_gui = self.__gui_handler.get_main_menu_panel()
+        self.__settings_menu_gui = self.__gui_handler.get_settings_menu_panel()

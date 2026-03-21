@@ -1,0 +1,35 @@
+{
+    "bg_vol": 45,
+    "sfx_vol": 100,
+    "bg_col": [
+        255,
+        0,
+        0
+    ],
+    "wall_col": [
+        255,
+        255,
+        255
+    ],
+    "btn_col": [
+        0,
+        10,
+        140
+    ],
+    "highlight_col": [
+        0,
+        0,
+        0
+    ],
+    "player_col": [
+        0,
+        51,
+        12
+    ],
+    "enemy_col": [
+        255,
+        178,
+        0
+    ],
+    "selected_item": "btn_col"
+}
