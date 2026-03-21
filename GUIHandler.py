@@ -168,3 +168,20 @@ class GUIHandler:
                 element.kill()
         
         self.__build_ui(current_screen)
+    
+    def update_slider_values(self):
+        self.__slider_settings_bg_volume.set_current_value(self.__settings_handler.get_bg_volume())
+        self.__slider_settings_sfx_volume.set_current_value(self.__settings_handler.get_sfx_volume())
+        self.__slider_pause_bg_volume.set_current_value(self.__settings_handler.get_bg_volume())
+        self.__slider_pause_sfx_volume.set_current_value(self.__settings_handler.get_sfx_volume())
+    
+    def update_settings_text(self):
+        settings = self.__settings_handler.get_settings()
+        self.__txt_settings_bg_volume.set_text(f"Background Volume: {settings["bg_vol"]}%")
+        self.__txt_settings_sfx_volume.set_text(f"Sound Effects Volume: {settings["sfx_vol"]}%")
+        self.__txt_pause_bg_volume.set_text(f"Background Volume: {settings["bg_vol"]}%")
+        self.__txt_pause_sfx_volume.set_text(f"Sound Effects Volume: {settings["sfx_vol"]}%")
+        
+        self.__txt_red_level.set_text(f"Red: {int(((settings[settings["selected_item"]][0])/255)*100)}%")
+        self.__txt_green_level.set_text(f"Green: {int(((settings[settings["selected_item"]][1])/255)*100)}%")
+        self.__txt_blue_level.set_text(f"Blue: {int(((settings[settings["selected_item"]][2])/255)*100)}%")

@@ -13,42 +13,42 @@
     },
     "#colour_rect": {
         "colours": {
-            "dark_bg": "#000a8c"
+            "dark_bg": "#02ba0d"
         }
     },
     "label": {
         "colours": {
-            "normal_text": "#ffffff"
+            "normal_text": "#f66e0d"
         }
     },
     "button": {
         "colours": {
-            "normal_bg": "#000a8c",
-            "normal_text": "#ffffff",
+            "normal_bg": "#333333",
+            "normal_text": "#f66e0d",
             "normal_txt": "#000000"
         }
     },
     "horizontal_slider": {
         "colours": {
-            "dark_bg": "#000a8c"
+            "dark_bg": "#333333"
         }
     },
     "horizontal_slider.#left_button": {
         "colours": {
-            "normal_bg": "#000a8c",
-            "normal_text": "#ffffff"
+            "normal_bg": "#333333",
+            "normal_text": "#f66e0d"
         }
     },
     "horizontal_slider.#right_button": {
         "colours": {
-            "normal_bg": "#000a8c",
-            "normal_text": "#ffffff"
+            "normal_bg": "#333333",
+            "normal_text": "#f66e0d"
         }
     },
     "horizontal_slider.#sliding_button": {
         "colours": {
-            "normal_bg": "#000a8c",
-            "normal_text": "#ffffff"
+            "normal_bg": "#333333",
+            "normal_text": "#f66e0d"
         }
     }
 }

@@ -53,7 +53,6 @@ class MusicHandler:
     
     def set_background_volume(self, volume:int):
         pygame.mixer.music.set_volume((volume/100))
-        print(f"bg vol set to {volume}")
     
     def set_sfx_volume(self, volume:int):
         volume_dec = volume/100
@@ -62,4 +61,3 @@ class MusicHandler:
         self.__success.set_volume(volume_dec)
         self.__collectible.set_volume(volume_dec)
         self.__error.set_volume(volume_dec)
-        print(f"sfx vol set to {volume}")

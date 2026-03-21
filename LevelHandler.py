@@ -71,6 +71,7 @@ class LevelHandler:
         while user_turn == True and self.__exit_level == False: #runs until player chooses to quit the game (presses X on window), or has moved the character.
             for event in pygame.event.get(): #run through all pygame events since last checked.
                 if event.type == pygame.QUIT: #if user clicks close button, set user_turn to False and __exit_level to True to escape level loop. Run GameHandler's save_and_quit method, closing program.
+                    self.__music_handler.play_sfx_click()
                     self.__parent.save_and_quit()
                     user_turn = False
                     self.__exit_level = True
@@ -96,6 +97,8 @@ class LevelHandler:
                     elif event.key == pygame.K_ESCAPE:
                         self.__music_handler.play_sfx_click()
                         self.__pause()
+                    else:
+                        self.__music_handler.play_sfx_error()
                 
                 if event.type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.__level_gui["btn_pause"]:
@@ -137,6 +140,8 @@ class LevelHandler:
                         if event.key == pygame.K_ESCAPE:
                             self.__music_handler.play_sfx_click()
                             self.__pause()
+                        else:
+                            self.__music_handler.play_sfx_error()
         
                     if event.type == pygame_gui.UI_BUTTON_PRESSED:
                         if event.ui_element == self.__level_gui["btn_pause"]:
@@ -159,6 +164,8 @@ class LevelHandler:
         self.__level_gui["panel"].hide()
         self.__pause_menu_gui["panel"].show()
         self.__paused = True
+
+        volume_changed = False
         while self.__paused == True:
             self.__music_handler.play_menu_music()
             for event in pygame.event.get():
@@ -171,6 +178,8 @@ class LevelHandler:
                     if event.key == pygame.K_ESCAPE:
                         self.__music_handler.play_sfx_click()
                         self.__paused = False
+                    else:
+                        self.__music_handler.play_sfx_error()
 
                 elif event.type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.__pause_menu_gui["btn_resume"]:
@@ -195,17 +204,25 @@ class LevelHandler:
                         self.__exit_level = True
                 
                 elif event.type == pygame_gui.UI_HORIZONTAL_SLIDER_MOVED:
-                    if event.ui_element == self.__settings_menu_gui["slider_settings_bg_volume"]:
+                    if event.ui_element == self.__pause_menu_gui["slider_pause_bg_volume"]:
+                        volume_changed = True
                         self.__settings_handler.set_bg_volume(event.value)
                         self.__music_handler.set_background_volume(event.value)
                     
-                    elif event.ui_element == self.__settings_menu_gui["slider_settings_sfx_volume"]:
+                    elif event.ui_element == self.__pause_menu_gui["slider_pause_sfx_volume"]:
+                        volume_changed = True
                         self.__settings_handler.set_sfx_volume(event.value)
                         self.__music_handler.set_sfx_volume(event.value)
+                    
+                elif event.type == pygame.MOUSEBUTTONUP:
+                    if volume_changed == True:
+                        volume_changed = False
+                        self.__music_handler.play_sfx_click()
+                        self.__gui_handler.update_slider_values()
                 
                 self.__gui_handler.process_events(event)
             
-            self.__update_settings_text()
+            self.__gui_handler.update_settings_text()
 
             self.__gui_handler.update(1/60)
 
@@ -227,6 +244,7 @@ class LevelHandler:
 
         settings_open = True
         colour_changed = False
+        volume_changed = False
         while settings_open == True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: #if user clicks screen's X button, set __exit_level to True to escape level loop. Run GameHandler's save_and_quit method, closing program.
@@ -239,6 +257,8 @@ class LevelHandler:
                     if event.key == pygame.K_ESCAPE:
                         self.__music_handler.play_sfx_click()
                         settings_open = False
+                    else:
+                        self.__music_handler.play_sfx_error()
 
                 elif event.type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.__settings_menu_gui["btn_exit_settings"]:
@@ -246,29 +266,35 @@ class LevelHandler:
                         settings_open = False
                     
                     elif event.ui_element == self.__settings_menu_gui["btn_light_theme"]:
+                        self.__music_handler.play_sfx_click()
                         self.__settings_handler.set_light_theme()
                         self.__reload_theme("settings_menu")
                     
                     elif event.ui_element == self.__settings_menu_gui["btn_light_hc_theme"]:
+                        self.__music_handler.play_sfx_click()
                         self.__settings_handler.set_light_hc_theme()
                         self.__reload_theme("settings_menu")
                     
                     elif event.ui_element == self.__settings_menu_gui["btn_dark_theme"]:
+                        self.__music_handler.play_sfx_click()
                         self.__settings_handler.set_dark_theme()
                         self.__reload_theme("settings_menu")
                     
                     elif event.ui_element == self.__settings_menu_gui["btn_dark_hc_theme"]:
+                        self.__music_handler.play_sfx_click()
                         self.__settings_handler.set_dark_hc_theme()
                         self.__reload_theme("settings_menu")
                 
                 elif event.type == pygame_gui.UI_HORIZONTAL_SLIDER_MOVED:
                     if event.ui_element == self.__settings_menu_gui["slider_settings_bg_volume"]:
-                        current_settings["bg_vol"] = event.value
-                        self.__settings_handler.set_settings(current_settings)
+                        volume_changed = True
+                        self.__settings_handler.set_bg_volume(event.value)
+                        self.__music_handler.set_background_volume(event.value)
                     
                     elif event.ui_element == self.__settings_menu_gui["slider_settings_sfx_volume"]:
-                        current_settings["bg_vol"] = event.value
-                        self.__settings_handler.set_settings(current_settings)
+                        volume_changed = True
+                        self.__settings_handler.set_sfx_volume(event.value)
+                        self.__music_handler.set_sfx_volume(event.value)
                     
                     elif event.ui_element == self.__settings_menu_gui["slider_red_level"]:
                         colour_changed = True
@@ -281,6 +307,7 @@ class LevelHandler:
                 
                 elif event.type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED:
                     if event.ui_element == self.__settings_menu_gui["drop_theme_section"]:
+                        self.__music_handler.play_sfx_click()
                         match event.text:
                             case "Background":
                                 current_settings["selected_item"] = "bg_col"
@@ -306,6 +333,7 @@ class LevelHandler:
                 elif event.type == pygame.MOUSEBUTTONUP:
                     if colour_changed == True:
                         colour_changed = False
+                        self.__music_handler.play_sfx_click()
                         rgb_r_value = int((self.__settings_menu_gui["slider_red_level"].get_current_value()/100)*255)
                         rgb_g_value = int((self.__settings_menu_gui["slider_green_level"].get_current_value()/100)*255)
                         rgb_b_value = int((self.__settings_menu_gui["slider_blue_level"].get_current_value()/100)*255)
@@ -313,11 +341,16 @@ class LevelHandler:
                         current_settings[current_settings["selected_item"]] = (rgb_r_value, rgb_g_value, rgb_b_value)
                         self.__settings_handler.set_settings(current_settings)
                         self.__reload_theme("settings_menu")
+                    
+                    if volume_changed == True:
+                        volume_changed = False
+                        self.__music_handler.play_sfx_click()
+                        self.__gui_handler.update_slider_values()
 
                 
                 self.__gui_handler.process_events(event)
             
-            self.__update_settings_text()
+            self.__gui_handler.update_settings_text()
 
             self.__gui_handler.update(1/60)
 
@@ -331,23 +364,16 @@ class LevelHandler:
 
     def __reload_theme(self, current_screen):
         self.__gui_handler.reload_theme(current_screen)
+        self.__player.update_colour()
+        for enemy in self.__enemies:
+            enemy.update_colour()
+        
         self.__level_gui = self.__gui_handler.get_level_panel()
         self.__pause_menu_gui = self.__gui_handler.get_pause_menu_panel()
         self.__settings_menu_gui = self.__gui_handler.get_settings_menu_panel()
         self.__endgame_gui = self.__gui_handler.get_endgame_panel()
 
-        self.__parent.reload_theme()
-
-    def __update_settings_text(self):
-        settings = self.__settings_handler.get_settings()
-        self.__settings_menu_gui["txt_settings_bg_volume"].set_text(f"Background Volume: {settings["bg_vol"]}%")
-        self.__settings_menu_gui["txt_settings_sfx_volume"].set_text(f"Sound Effects Volume: {settings["sfx_vol"]}%")
-        self.__pause_menu_gui["txt_pause_bg_volume"].set_text(f"Background Volume: {settings["bg_vol"]}%")
-        self.__pause_menu_gui["txt_pause_sfx_volume"].set_text(f"Sound Effects Volume: {settings["sfx_vol"]}%")
-        
-        self.__settings_menu_gui["txt_red_level"].set_text(f"Red: {int(((settings[settings["selected_item"]][0])/255)*100)}%")
-        self.__settings_menu_gui["txt_green_level"].set_text(f"Green: {int(((settings[settings["selected_item"]][1])/255)*100)}%")
-        self.__settings_menu_gui["txt_blue_level"].set_text(f"Blue: {int(((settings[settings["selected_item"]][2])/255)*100)}%")
+        self.__parent.reload_elements()
 
     #__check_game_state() - checks if user has lost or won and calls the relevant method.
     def __check_game_state(self) -> None:
@@ -397,7 +423,7 @@ class LevelHandler:
                     self.__paused = False
                     exit_screen = True
 
-                if event.type == pygame_gui.UI_BUTTON_PRESSED:
+                elif event.type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.__endgame_gui["btn_return"]:
                         self.__music_handler.play_sfx_click()
                         exit_screen = True
@@ -406,6 +432,9 @@ class LevelHandler:
                         self.__music_handler.play_sfx_click()
                         replay = True
                         exit_screen = True
+                
+                elif event.type == pygame.KEYDOWN:
+                    self.__music_handler.play_sfx_error()
                 
                 self.__gui_handler.process_events(event)
             
@@ -439,7 +468,7 @@ class LevelHandler:
                     self.__paused = False
                     exit_screen = True
 
-                if event.type == pygame_gui.UI_BUTTON_PRESSED:
+                elif event.type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == self.__endgame_gui["btn_return"]:
                         self.__music_handler.play_sfx_click()
                         exit_screen = True
@@ -448,6 +477,9 @@ class LevelHandler:
                         self.__music_handler.play_sfx_click()
                         replay = True
                         exit_screen = True
+                
+                elif event.type == pygame.KEYDOWN:
+                    self.__music_handler.play_sfx_error()
                 
                 self.__gui_handler.process_events(event)
             

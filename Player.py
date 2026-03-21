@@ -67,3 +67,6 @@ class Player(Entity):
             return True
         
         return False
+    
+    def update_colour(self):
+        self._col = self._settings_handler.get_player_col()

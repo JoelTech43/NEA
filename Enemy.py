@@ -149,3 +149,6 @@ class Enemy(Entity):
 
         self.__move_enemy(shortest_route[0])
         self._parent.get_maze().reset_cell_estimates()
+    
+    def update_colour(self):
+        self._col = self._settings_handler.get_enemy_col()
