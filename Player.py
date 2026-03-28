@@ -21,15 +21,15 @@ class Player(Entity):
         _, enemy_poses = self._parent.get_entity_positions()
         new_maze_pos = (self._maze_pos[0]+move_dir[0], self._maze_pos[1]+move_dir[1])
 
-        if new_maze_pos in enemy_poses:
+        if new_maze_pos in enemy_poses: #if moving in this direction would place you onto an Enemy, not a valid move.
             return False
-        elif move_dir == (-1,0) and current_cell_walls[0] == False and self._maze_pos[0] > 0:
+        elif move_dir == (-1,0) and current_cell_walls[0] == False and self._maze_pos[0] > 0: #if entered left and no left wall and not in leftmost cell, left is a valid move.
             return True
-        elif move_dir == (0,-1) and current_cell_walls[1] == False and self._maze_pos[1] > 0:
+        elif move_dir == (0,-1) and current_cell_walls[1] == False and self._maze_pos[1] > 0: #if entered up and no top wall and not in topmost cell, up is a valid move.
             return True
-        elif move_dir == (1,0) and current_cell_walls[2] == False and self._maze_pos[0] < (maze_height-1):
+        elif move_dir == (1,0) and current_cell_walls[2] == False and self._maze_pos[0] < (maze_height-1): #if entered right and no right wall and not in rightmost cell, right is a valid move.
             return True
-        elif move_dir == (0,1) and current_cell_walls[3] == False and self._maze_pos[1] < (maze_height-1):
+        elif move_dir == (0,1) and current_cell_walls[3] == False and self._maze_pos[1] < (maze_height-1): #if entered down and no bottom wall and not in bottommost cell, down is a valid move.
             return True
         else:
             return False
@@ -43,7 +43,7 @@ class Player(Entity):
         suggested_screen_x = maze_screen_pos[0]+(suggested_x*self._cell_height)+1
         suggested_screen_y = maze_screen_pos[1]+(suggested_y*self._cell_height)+1
         
-        surface = pygame.Surface((self._cell_height-2, self._cell_height-2), pygame.SRCALPHA)
+        surface = pygame.Surface((self._cell_height-2, self._cell_height-2), pygame.SRCALPHA) #displaying the suggested move as a Surface as it can be made transparent.
         surface.fill((self._col[0], self._col[1], self._col[2], 120))
         canvas.blit(surface, (suggested_screen_x, suggested_screen_y))
     
@@ -69,4 +69,4 @@ class Player(Entity):
         return False
     
     def update_colour(self):
-        self._col = self._settings_handler.get_player_col()
+        self._col = self._settings_handler.get_player_col() #updates the col attribute of the Player/Entity.

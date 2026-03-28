@@ -38,7 +38,7 @@ class Maze:
         finish_cell_screen_y = self.__screen_pos[1]+(self.__cell_height*self.__finish_coord[1])+1
         pygame.draw.rect(canvas, self.__settings_handler.get_highlight_col(), (finish_cell_screen_x, finish_cell_screen_y, self.__cell_height-2, self.__cell_height-2))
 
-        for coord in self.__collectibles_coords:
+        for coord in self.__collectibles_coords: #draws each collectible.
             collectible_screen_x = self.__screen_pos[0]+(self.__cell_height*coord[0])+self.__cell_height//2
             collectible_screen_y = self.__screen_pos[1]+(self.__cell_height*coord[1])+self.__cell_height//2
             pygame.draw.circle(canvas, self.__settings_handler.get_highlight_col(), (collectible_screen_x, collectible_screen_y), self.__cell_height//2)

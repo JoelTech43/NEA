@@ -75,7 +75,8 @@ class Enemy(Entity):
 
                     visiting_cell = cells[visiting_cell_coord[1]][visiting_cell_coord[0]]
                 else:
-                    visited.sort(key=lambda coord: (cells[coord[1]][coord[0]].get_heuristic_estimate(), cells[coord[1]][coord[0]].get_overall_estimate())) #sort by heuristic (dist to end) and then overall so that we get closest cell to end that is also closest to start.
+                    visited.sort(key=lambda coord: (cells[coord[1]][coord[0]].get_heuristic_estimate(), cells[coord[1]][coord[0]].get_overall_estimate())) #sort by heuristic (dist to end) and then overall so that we get
+                                                                                                                                                            #closest cell to end that is also closest to start.
             
                     visiting_cell_coord = visited[0]
                     visiting_cell = cells[visiting_cell_coord[1]][visiting_cell_coord[0]]
@@ -112,30 +113,30 @@ class Enemy(Entity):
         current_cell = cells[self._maze_pos[1]][self._maze_pos[0]]
         walls = current_cell.get_walls()
         possible_moves = []
-        if walls[0] == False: #based on the walls around the visiting cell, add adjacent cells to possible moves
+        if walls[0] == False: #based on the walls around the visiting cell, add adjacent cells to possible moves. If no left wall and no enemy to left, add left neighbour.
             possible_coord = (self._maze_pos[0]-1, self._maze_pos[1])
             if possible_coord not in enemy_poses:
                 possible_moves.append(possible_coord)
 
         if walls[1] == False:
-            possible_coord = (self._maze_pos[0], self._maze_pos[1]-1)
+            possible_coord = (self._maze_pos[0], self._maze_pos[1]-1) #If no top wall and no enemy above, add top neighbour.
             if possible_coord not in enemy_poses:
                 possible_moves.append(possible_coord)
         
         if walls[2] == False:
-            possible_coord = (self._maze_pos[0]+1, self._maze_pos[1])
+            possible_coord = (self._maze_pos[0]+1, self._maze_pos[1]) #If no right wall and no enemy to right, add right neighbour.
             if possible_coord not in enemy_poses:
                 possible_moves.append(possible_coord)
         
         if walls[3] == False:
-            possible_coord = (self._maze_pos[0], self._maze_pos[1]+1)
+            possible_coord = (self._maze_pos[0], self._maze_pos[1]+1) #If no bottom wall and no enemy below, add bottom neighbour.
             if possible_coord not in enemy_poses:
                 possible_moves.append(possible_coord)
         
         return possible_moves
 
 
-    def __move_enemy(self, dest: tuple) -> None:
+    def __move_enemy(self, dest: tuple) -> None: #moves enemy to dest cell unless occupied by another enemy. If so, gets possible moves and picks one at random.
         _, enemy_poses = self._parent.get_entity_positions()
         if dest in enemy_poses:
             options = self.__get_possible_moves()
@@ -143,12 +144,12 @@ class Enemy(Entity):
         
         self._maze_pos = dest
 
-    def make_calculated_move(self) -> None:
+    def make_calculated_move(self) -> None: #finds shortest route to player, moves enemy along that route if possible, then resets cell estimates ready for next Enemy move.
         player_maze_pos, _ = self._parent.get_entity_positions()
         shortest_route = self.__find_shortest_route(player_maze_pos)
 
         self.__move_enemy(shortest_route[0])
         self._parent.get_maze().reset_cell_estimates()
     
-    def update_colour(self):
+    def update_colour(self): #update Enemy col attribute.
         self._col = self._settings_handler.get_enemy_col()

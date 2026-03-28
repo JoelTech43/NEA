@@ -1,16 +1,16 @@
 import json
 
 class SettingsHandler:
-    def __init__(self):
+    def __init__(self): #loads current settings and sets the pygame_gui theme to the current settings.
         self.__settings = self.__load_settings()
         self.__update_theme_file()
     
-    def __load_settings(self) -> dict:
+    def __load_settings(self) -> dict: #if settings.json file exists, load it as a dictionary.
         try:
             with open("settings.json", "r") as f:
                 settings = json.load(f)
         
-        except FileNotFoundError:
+        except FileNotFoundError: #if doesn't exist, create a new settings dist.
             settings = {
                 "bg_vol": 100,
                 "sfx_vol": 100,
@@ -25,7 +25,7 @@ class SettingsHandler:
         
         return settings
 
-    def __update_theme_file(self):
+    def __update_theme_file(self): #load the theme.json file as a dictionary, change the dictionary to match the colours in the settings dict, then dump the dictionary into theme.json using the json module.
         with open("theme.json", "r") as f:
             theme = json.load(f)
 
@@ -52,7 +52,7 @@ class SettingsHandler:
         r,g,b = col
         return '#%02x%02x%02x' % (r, g, b) #not designed by me.
     
-    def set_light_theme(self):
+    def set_light_theme(self): #sets colours to the light theme created by me and updates the theme.json file to change the pygame_gui theme.
         self.__settings["bg_col"] = (230, 229, 229)
         self.__settings["wall_col"] = (0, 0, 0)
         self.__settings["btn_col"] = (156, 150, 150)
@@ -62,7 +62,7 @@ class SettingsHandler:
         
         self.__update_theme_file()
     
-    def set_light_hc_theme(self):
+    def set_light_hc_theme(self): #sets colours to the light high contrast theme created by me and updates the theme.json file to change the pygame_gui theme.
         self.__settings["bg_col"] = (255, 255, 255)
         self.__settings["wall_col"] = (0, 0, 0)
         self.__settings["btn_col"] = (255, 255, 255)
@@ -72,7 +72,7 @@ class SettingsHandler:
         
         self.__update_theme_file()
     
-    def set_dark_theme(self):
+    def set_dark_theme(self): #sets colours to the dark theme created by me and updates the theme.json file to change the pygame_gui theme.
         self.__settings["bg_col"] = (97, 97, 97)
         self.__settings["wall_col"] = (246, 110, 13)
         self.__settings["btn_col"] = (51, 51, 51)
@@ -82,7 +82,7 @@ class SettingsHandler:
         
         self.__update_theme_file()
     
-    def set_dark_hc_theme(self):
+    def set_dark_hc_theme(self): #sets colours to the dark high contrast theme created by me and updates the theme.json file to change the pygame_gui theme.
         self.__settings["bg_col"] = (0, 0, 0)
         self.__settings["wall_col"] = (255, 255, 255)
         self.__settings["btn_col"] = (0, 0, 0)
@@ -132,6 +132,6 @@ class SettingsHandler:
         self.__settings = settings
         self.__update_theme_file()
     
-    def save_settings(self):
+    def save_settings(self): #save settings by dumping the dictionary in settings.json using the json module. If settings.json does not exist, opening in write mode will create it.
         with open("settings.json", "w") as f:
             json.dump(self.__settings, f, indent=4)

@@ -15,12 +15,12 @@ class GUIHandler:
         self.__canvas = pygame.display.set_mode(self.__WINDOW_SIZE) #creates the window, with the size we calculated earlier.
         pygame.display.set_caption("Joel's A-maze-ing Game") #sets window title
 
-        self.__build_ui("bg_col")
+        self.__build_ui() #create all UI elements.
         #pygame.time.Clock() not needed as simple game so can just assume 1/60 for time_deltas.
 
-    def __build_ui(self, current_screen="main_menu"):
+    def __build_ui(self, current_screen="main_menu"): #creates UIManager and all UI elements
         settings = self.__settings_handler.get_settings()
-        match settings["selected_item"]:
+        match settings["selected_item"]: #checks what item the dropdown box should have selected in settings. This determines the colour of the rectangle in the Settings Menu.
             case "bg_col":
                 starting_selection = "Background"
             case "wall_col":
@@ -35,6 +35,8 @@ class GUIHandler:
                 starting_selection = "Enemy"
 
         self.__gui_manager = pygame_gui.UIManager(self.__WINDOW_SIZE, "theme.json")
+
+        #Created a UIPanel for each screen and then the elements below it. Elements in blocks according to the screen.
 
         self.__main_menu_panel = pygame_gui.elements.UIPanel(relative_rect=pygame.Rect((0,0), self.__WINDOW_SIZE), starting_height=1, manager=self.__gui_manager)
         self.__txt_title = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((30,30), (500,50)), text="Joel's A-maze-ing Game", manager=self.__gui_manager, container=self.__main_menu_panel)
@@ -61,7 +63,7 @@ class GUIHandler:
         self.__btn_restart = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((215,185), (100,50)), text="Restart Level", manager=self.__gui_manager, container=self.__pause_menu_panel)
         self.__btn_quit_level = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((320,185), (100,50)), text="Quit Level", manager=self.__gui_manager, container=self.__pause_menu_panel)
 
-        r,g,b = settings[settings["selected_item"]]
+        r,g,b = settings[settings["selected_item"]] #gets colour of the selected theme section.
         self.__settings_menu_panel = pygame_gui.elements.UIPanel(relative_rect=pygame.Rect((0,0), self.__WINDOW_SIZE), starting_height=1, manager=self.__gui_manager)
         self.__txt_settings_title = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((5,5), (150,20)), text="Settings", manager=self.__gui_manager, container=self.__settings_menu_panel)
         self.__txt_settings_volume_subtitle = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((5,25), (150,20)), text="Volume Settings:", manager=self.__gui_manager, container=self.__settings_menu_panel)
@@ -90,7 +92,7 @@ class GUIHandler:
         self.__btn_replay = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((5,50), (100,50)), text="Replay Level", manager=self.__gui_manager, container=self.__endgame_panel)
         self.__btn_return = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((110,50), (100,50)), text="Return to\nMain Menu", manager=self.__gui_manager, container=self.__endgame_panel)
 
-        match current_screen:
+        match current_screen: #checks what the current screen is and shows/hides the relevant UIPanels. If none given or an invalid one given, assumes Main Menu.
             case "level":
                 self.__main_menu_panel.hide()
                 self.__level_panel.show()
@@ -126,6 +128,7 @@ class GUIHandler:
                 self.__settings_menu_panel.hide()
                 self.__endgame_panel.hide()
 
+    #getter methods that return dictionary wheree key is variable name, value is the element passed by reference.
     def get_main_menu_panel(self) -> dict:
         return {"panel": self.__main_menu_panel, "txt_title": self.__txt_title, "txt_level": self.__txt_level, "txt_collectibles": self.__txt_collectibles, "btn_play_level": self.__btn_play_level, "btn_settings": self.__btn_settings, "btn_quit": self.__btn_quit}
     
@@ -141,13 +144,13 @@ class GUIHandler:
     def get_endgame_panel(self):
         return {"panel": self.__endgame_panel, "txt_endgame_title": self.__txt_endgame_title, "btn_replay": self.__btn_replay, "btn_return": self.__btn_return}
 
-    def process_events(self, event):
+    def process_events(self, event): #calls UIManager's process_events method - essential for pygame_gui event processing.
         self.__gui_manager.process_events(event)
     
-    def update(self, delta):
+    def update(self, delta): #calls UIManager's update method. delta is meant to be the time that passed since the last call. My game doesn't need delta time so elsewhere I just pass 1/60 to assume 60fps.
         self.__gui_manager.update(delta)
     
-    def draw_ui(self):
+    def draw_ui(self): #calls UIManager's draw_ui method, giving it to the window to draw on.
         self.__gui_manager.draw_ui(self.__canvas)
     
     def get_canvas(self):
@@ -162,20 +165,20 @@ class GUIHandler:
     def get_maze_screen_pos(self) -> tuple:
         return self.__MAZE_SCREEN_POS
 
-    def reload_theme(self, current_screen="main_menu"):
+    def reload_theme(self, current_screen="main_menu"): #destroys all current UI elements, and then recreates them with the new theme.
         for element in self.__gui_manager.get_sprite_group().sprites():
             if hasattr(element, "kill"):
                 element.kill()
         
         self.__build_ui(current_screen)
     
-    def update_slider_values(self):
+    def update_slider_values(self): #used to set the current value of the sliders to match the settings.
         self.__slider_settings_bg_volume.set_current_value(self.__settings_handler.get_bg_volume())
         self.__slider_settings_sfx_volume.set_current_value(self.__settings_handler.get_sfx_volume())
         self.__slider_pause_bg_volume.set_current_value(self.__settings_handler.get_bg_volume())
         self.__slider_pause_sfx_volume.set_current_value(self.__settings_handler.get_sfx_volume())
     
-    def update_settings_text(self):
+    def update_settings_text(self): #updates the text for each slider in the Pause and Settings Menus to match settings.
         settings = self.__settings_handler.get_settings()
         self.__txt_settings_bg_volume.set_text(f"Background Volume: {settings["bg_vol"]}%")
         self.__txt_settings_sfx_volume.set_text(f"Sound Effects Volume: {settings["sfx_vol"]}%")
